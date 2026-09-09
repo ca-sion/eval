@@ -149,17 +149,17 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'real_attendances' => 13, 'competitions_done' => 5, 'parent_volunteering_count' => 2,
-                'c4_commitment' => 8.0, 'c5_behavior' => 8.5, 'c6_level' => AthleticLevel::Romand,
+                'c4_commitment' => 8.0, 'c5_behavior' => 8.5, 'c6_level' => AthleticLevel::Regional,
                 'c7_progress' => 8.0, 'c8_sports_hygiene' => 7.5, 'has_club_engagement' => false,
             ],
             [
                 'real_attendances' => 10, 'competitions_done' => 3, 'parent_volunteering_count' => 1,
-                'c4_commitment' => 6.5, 'c5_behavior' => 6.0, 'c6_level' => AthleticLevel::Regional,
+                'c4_commitment' => 6.5, 'c5_behavior' => 6.0, 'c6_level' => AthleticLevel::Cantonal,
                 'c7_progress' => 6.5, 'c8_sports_hygiene' => 6.0, 'lateness_count' => 2,
             ],
             [
                 'is_injured' => true, 'real_attendances' => 5, 'competitions_done' => 1, 'parent_volunteering_count' => 2,
-                'c4_commitment' => 7.0, 'c5_behavior' => 7.5, 'c6_level' => AthleticLevel::Regional,
+                'c4_commitment' => 7.0, 'c5_behavior' => 7.5, 'c6_level' => AthleticLevel::Cantonal,
                 'c7_progress' => 6.0, 'c8_sports_hygiene' => 6.5,
             ],
         ];
@@ -196,7 +196,7 @@ class DatabaseSeeder extends Seeder
                 'parent_volunteering_count' => 2,
                 'c4_commitment' => 8.5 - $idx,
                 'c5_behavior' => 9.0 - ($idx * 0.5),
-                'c6_level' => AthleticLevel::Romand,
+                'c6_level' => AthleticLevel::Regional,
                 'c7_progress' => 8.0 - $idx,
                 'c8_sports_hygiene' => 8.0,
             ]);

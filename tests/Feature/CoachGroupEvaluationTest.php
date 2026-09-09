@@ -221,16 +221,16 @@ test('coach can lock and unlock an athlete evaluation at will during active sess
         'lateness_count' => 0,
     ]);
 
-    // 1. Initially Draft: isEditable is true, coach sees "Verrouiller"
+    // 1. Initially Draft: isEditable is true, coach sees "Brouillon"
     $test = Livewire::test(CoachGroupEvaluation::class, ['group' => $group])
-        ->assertSee('Brouillon (Verrouiller)')
+        ->assertSee('Brouillon')
         ->call('incrementLateness', $eval->id);
 
     expect($eval->fresh()->lateness_count)->toEqual(1);
 
     // 2. Coach locks the athlete (Submitted)
     $test->call('toggleStatus', $eval->id)
-        ->assertSee('Verrouillé (Déverrouiller)');
+        ->assertSee('Verrouillé');
 
     expect($eval->fresh()->status)->toEqual(EvaluationStatus::Submitted);
 
@@ -240,7 +240,7 @@ test('coach can lock and unlock an athlete evaluation at will during active sess
 
     // 3. Coach unlocks the athlete (back to Draft)
     $test->call('toggleStatus', $eval->id)
-        ->assertSee('Brouillon (Verrouiller)');
+        ->assertSee('Brouillon');
 
     expect($eval->fresh()->status)->toEqual(EvaluationStatus::Draft);
 

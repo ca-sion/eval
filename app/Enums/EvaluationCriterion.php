@@ -85,7 +85,7 @@ enum EvaluationCriterion: string implements HasColor, HasDescription, HasLabel
             self::C3_Competitions => 'Taux de participation aux compétitions rapporté aux objectifs fixés. Neutralisé sur blessure.',
             self::C4_Commitment => 'Qualité d’écoute des consignes, rigueur, concentration et intensité déployée lors des entraînements.',
             self::C5_Behavior => 'Respect des camarades, des entraîneurs, des règles de vie et soin apporté aux installations et au matériel.',
-            self::C6_Performance => 'Niveau athlétique validé sur barème par paliers (Régional, Cantonal, Romand, National). Pas de malus.',
+            self::C6_Performance => 'Niveau en compétition (cantonal, romand, national, international). Il n\'y a pas de malus. Ce critère apporte quoi qu\'il en soit un bonus.',
             self::C7_Progress => 'Évolution technique, maîtrise gestuelle et progression athlétique constatées sur la période.',
             self::C8_SportsHygiene => 'Place du sport dans la vie privée, hygiène de vie (sommeil, récupération, gestion des excès/fêtes/alcool chez les adultes, plans hors club respectés, écoute du corps, régulation des courses le week-end) et qualité de l\'environnement familial (soutien des parents sans omniprésence étouffante, suivi médical/physio sérieux si blessé, adhésion à la philosophie du club plutôt que discours contraire au coach).',
             self::C9_Volunteering => 'Participation active des parents aux manifestations organisées par le club.',

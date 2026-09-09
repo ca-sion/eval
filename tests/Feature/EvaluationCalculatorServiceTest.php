@@ -99,8 +99,8 @@ test('c6 athletic level scores match specified tiers', function () {
     $service = new EvaluationCalculatorService;
 
     $tiers = [
-        AthleticLevel::Regional->value => 6.0,
-        AthleticLevel::Romand->value => 7.5,
+        AthleticLevel::Cantonal->value => 6.0,
+        AthleticLevel::Regional->value => 7.5,
         AthleticLevel::National->value => 9.0,
         AthleticLevel::International->value => 10.0,
     ];
@@ -429,7 +429,7 @@ test('evaluation criteria enum methods work correctly', function () {
         'competitions_done' => 5,
         'c4_commitment' => 8.5,
         'c5_behavior' => 9.0,
-        'c6_level' => AthleticLevel::Romand,
+        'c6_level' => AthleticLevel::Regional,
         'c7_progress' => 8.0,
         'c8_sports_hygiene' => 7.5,
         'parent_volunteering_count' => 3,

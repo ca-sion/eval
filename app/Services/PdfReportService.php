@@ -29,7 +29,7 @@ class PdfReportService
         );
 
         return response()->streamDownload(
-            fn () => print($pdf->output()),
+            fn () => print ($pdf->output()),
             $fileName,
             ['Content-Type' => 'application/pdf']
         );
@@ -75,7 +75,7 @@ class PdfReportService
         );
 
         return response()->streamDownload(
-            fn () => print($pdf->output()),
+            fn () => print ($pdf->output()),
             $fileName,
             ['Content-Type' => 'application/pdf']
         );

@@ -30,8 +30,8 @@
                     CA
                 </div>
                 <div>
-                    <h1 class="text-base font-bold tracking-tight text-white leading-tight">{{ $group->name }}</h1>
-                    <p class="text-xs text-slate-400">CA Sion • Entraîneur</p>
+                    <h1 class="text-base font-bold tracking-tight text-white leading-tight">CA Sion</h1>
+                    <p class="text-xs text-slate-400">Outil d'évaluation pour entraîneur</p>
                 </div>
             </div>
 
