@@ -1,7 +1,10 @@
 <?php
 
+use App\Livewire\CoachGroupEvaluation;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/admin');
 });
+
+Route::get('/groupe/{group:access_token}', CoachGroupEvaluation::class)->name('group.mobile');
