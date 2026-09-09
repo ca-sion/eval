@@ -597,4 +597,217 @@
 
     @endif
 
+    <!-- GUIDE OFFICIEL DE NOTATION & ÉCHELLE DE VALEURS (UI / UX EXPLICATIF) -->
+    <div
+        x-data="{
+            openGuide: true,
+            activeScore: 5,
+            scores: @js(\App\Enums\EvaluationCriterion::qualitativeRubric()),
+            tiers: @js(\App\Enums\EvaluationCriterion::qualitativeTiers()),
+        }"
+        class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition-all mt-8"
+    >
+        <!-- En-tête du guide -->
+        <div
+            @click="openGuide = !openGuide"
+            class="p-4 sm:p-5 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white flex items-center justify-between cursor-pointer select-none"
+        >
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-red-600/90 text-white flex items-center justify-center font-black text-sm shadow-inner flex-shrink-0">
+                    0-10
+                </div>
+                <div>
+                    <h3 class="text-base font-extrabold tracking-tight text-white flex items-center gap-2">
+                        Barème d'étalonnage des notes (0 à 10)
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/20 text-blue-300 border border-blue-400/30">
+                            ★ 5 = standard attendu
+                        </span>
+                    </h3>
+                    <p class="text-xs text-slate-300 mt-0.5">
+                        Guide officiel CA Sion pour garantir une échelle de notation équitable entre tous les entraîneurs
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 text-xs font-semibold text-slate-300">
+                <span class="hidden sm:inline" x-text="openGuide ? 'Masquer' : 'Afficher le barème'"></span>
+                <svg
+                    class="w-5 h-5 transform transition-transform duration-200 text-slate-400"
+                    :class="openGuide ? 'rotate-180' : 'rotate-0'"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- Corps du guide -->
+        <div x-show="openGuide" x-collapse class="p-5 sm:p-6 space-y-6">
+
+            <!-- Message d'étalonnage fondamental (Le repère 5/10) -->
+            <div class="rounded-xl bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 border border-blue-200 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white font-black text-xs">5</span>
+                        <h4 class="text-sm font-bold text-blue-900"> / 10 = le standard du CA Sion</h4>
+                    </div>
+                    <p class="text-xs text-blue-800 leading-relaxed max-w-3xl">
+                        <strong>5 n'est pas une mauvaise note</strong> : c'est le standard attendu par le club. L'athlète répond fidèlement, sérieusement et avec constance aux exigences du critère évalué. La note <strong>10</strong> est réservée à des réalisations véritablement exceptionnelles et rares.
+                    </p>
+                </div>
+                <div class="flex items-center gap-2 self-stretch sm:self-auto justify-end flex-shrink-0">
+                    <span class="px-3 py-1 rounded-lg text-xs font-bold bg-red-100 text-red-800 border border-red-200">
+                        0 = Non acquis
+                    </span>
+                    <span class="px-3 py-1 rounded-lg text-xs font-bold bg-blue-100 text-blue-800 border border-blue-300 ring-2 ring-blue-500/20">
+                        5 = Standard acquis
+                    </span>
+                    <span class="px-3 py-1 rounded-lg text-xs font-bold bg-purple-100 text-purple-800 border border-purple-200">
+                        10 = Exceptionnel
+                    </span>
+                </div>
+            </div>
+
+            <!-- Grille synthétique des 5 grands paliers -->
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
+                    Les 5 paliers d'évaluation
+                </h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                    @foreach(\App\Enums\EvaluationCriterion::qualitativeTiers() as $key => $tier)
+                        <div
+                            class="rounded-xl border {{ $tier['border_color'] }} {{ $tier['bg_color'] }} p-3.5 flex flex-col justify-between transition-all hover:shadow-sm"
+                        >
+                            <div>
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-black {{ $tier['badge_color'] }}">
+                                        {{ $tier['range'] }}
+                                    </span>
+                                    @if($tier['highlight'])
+                                        <span class="text-[10px] font-extrabold text-blue-600 uppercase tracking-tight">Clé</span>
+                                    @endif
+                                </div>
+                                <h5 class="text-xs font-extrabold text-slate-900 leading-snug">
+                                    {{ $tier['name'] }}
+                                </h5>
+                                <div class="text-[11px] font-medium {{ $tier['text_color'] }} mb-2">
+                                    {{ $tier['subtitle'] }}
+                                </div>
+                                <p class="text-[11px] text-slate-600 leading-snug">
+                                    {{ $tier['summary'] }}
+                                </p>
+                            </div>
+                            <div class="mt-3 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px] text-slate-500">
+                                <span>Scores :</span>
+                                <div class="flex gap-1">
+                                    @foreach($tier['scores'] as $sc)
+                                        <button
+                                            type="button"
+                                            @click="activeScore = {{ $sc }}"
+                                            :class="activeScore === {{ $sc }} ? 'bg-slate-900 text-white font-bold' : 'bg-white text-slate-700 hover:bg-slate-100'"
+                                            class="w-5 h-5 rounded border border-slate-300 flex items-center justify-center transition-colors"
+                                        >
+                                            {{ $sc }}
+                                        </button>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
+            <!-- Sélecteur interactif détail note par note (0 à 10) -->
+            <div class="pt-4 border-t border-slate-100">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                        <svg class="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+                        </svg>
+                        Détail par note (cliquez pour inspecter)
+                    </h4>
+                    <span class="text-xs text-slate-500">
+                        Note sélectionnée : <strong class="text-slate-900" x-text="activeScore + ' / 10'"></strong>
+                    </span>
+                </div>
+
+                <!-- Boutons de sélection 0 à 10 -->
+                <div class="flex items-center gap-1.5 overflow-x-auto pb-2">
+                    @for($s = 0; $s <= 10; $s++)
+                        <button
+                            type="button"
+                            @click="activeScore = {{ $s }}"
+                            :class="activeScore === {{ $s }} ? 'bg-red-600 text-white shadow-sm ring-2 ring-red-500/30 scale-105' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'"
+                            class="flex-1 min-w-[34px] h-9 rounded-xl font-bold text-xs transition-all flex items-center justify-center flex-shrink-0"
+                        >
+                            {{ $s }}
+                        </button>
+                    @endfor
+                </div>
+
+                <!-- Panneau de détail dynamique de la note sélectionnée -->
+                <div class="mt-3 p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                            <span
+                                class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-900 text-white font-black text-sm"
+                                x-text="activeScore"
+                            ></span>
+                            <span
+                                class="px-2.5 py-0.5 rounded-full text-xs font-bold border"
+                                :class="scores[activeScore].badge_class"
+                                x-text="scores[activeScore].label"
+                            ></span>
+                        </div>
+                        <span class="text-xs text-slate-500 font-medium" x-text="scores[activeScore].tier_label"></span>
+                    </div>
+
+                    <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium" x-text="scores[activeScore].description"></p>
+
+                    <!-- Exemples appliqués aux critères C4, C5, C7, C8 -->
+                    <div class="pt-3 border-t border-slate-200/80 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                        <div class="bg-white p-3 rounded-xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <span class="font-black text-slate-800">C4 • Implication</span>
+                                </div>
+                                <p class="text-slate-600 leading-snug" x-text="scores[activeScore].c4"></p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-3 rounded-xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <span class="font-black text-slate-800">C5 • Comportement</span>
+                                </div>
+                                <p class="text-slate-600 leading-snug" x-text="scores[activeScore].c5"></p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-3 rounded-xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <span class="font-black text-slate-800">C7 • Progression</span>
+                                </div>
+                                <p class="text-slate-600 leading-snug" x-text="scores[activeScore].c7"></p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-3 rounded-xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <span class="font-black text-slate-800">C8 • Hygiène</span>
+                                </div>
+                                <p class="text-slate-600 leading-snug" x-text="scores[activeScore].c8"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
 </div>

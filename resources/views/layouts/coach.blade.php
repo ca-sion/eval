@@ -9,43 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
-    <style>
-        /* Google Material Design 3 Linear Progress Indicator */
-        .m3-progress-track {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background-color: rgba(239, 68, 68, 0.2);
-            overflow: hidden;
-            z-index: 50;
-        }
-        .m3-progress-primary,
-        .m3-progress-secondary {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            will-change: left, right;
-            background-color: #ef4444;
-        }
-        .m3-progress-primary {
-            animation: m3-indeterminate-primary 2s cubic-bezier(0.65, 0.815, 0.735, 0.395) infinite;
-        }
-        .m3-progress-secondary {
-            animation: m3-indeterminate-secondary 2s cubic-bezier(0.165, 0.84, 0.44, 1) 1.15s infinite;
-        }
-        @keyframes m3-indeterminate-primary {
-            0% { left: -35%; right: 100%; }
-            60% { left: 100%; right: -90%; }
-            100% { left: 100%; right: -90%; }
-        }
-        @keyframes m3-indeterminate-secondary {
-            0% { left: -200%; right: 100%; }
-            60% { left: 107%; right: -8%; }
-            100% { left: 107%; right: -8%; }
-        }
-    </style>
 </head>
 <body class="min-h-full flex flex-col font-sans bg-slate-100">
     <header class="sticky top-0 z-30 bg-slate-900 text-white shadow-md border-b border-slate-800 relative">

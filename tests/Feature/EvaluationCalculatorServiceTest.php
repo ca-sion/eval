@@ -446,3 +446,30 @@ test('evaluation criteria enum methods work correctly', function () {
         ->and(EvaluationCriterion::C8_SportsHygiene->calculateScore($eval))->toEqual(7.5)
         ->and(EvaluationCriterion::C9_Volunteering->calculateScore($eval))->toEqual(8.75);
 });
+
+test('qualitative rubric and tiers definitions are structured and calibrated correctly', function () {
+    $rubric = EvaluationCriterion::qualitativeRubric();
+    expect($rubric)->toHaveCount(11); // 0 to 10
+
+    // Vérifier les 3 piliers demandés : 0 (non acquis), 5 (standard attendu), 10 (exceptionnel)
+    expect($rubric[0]['tier'])->toEqual('non_acquis')
+        ->and($rubric[0]['label'])->toContain('Non acquis')
+        ->and($rubric[5]['tier'])->toEqual('acquis')
+        ->and($rubric[5]['description'])->toContain('CE QUI EST DEMANDÉ')
+        ->and($rubric[10]['tier'])->toEqual('exceptionnel')
+        ->and($rubric[10]['label'])->toContain('Exceptionnel');
+
+    $tiers = EvaluationCriterion::qualitativeTiers();
+    expect($tiers)->toHaveKeys(['non_acquis', 'en_cours', 'acquis', 'maitrise', 'exceptionnel'])
+        ->and($tiers['acquis']['range'])->toEqual('5 à 6')
+        ->and($tiers['acquis']['highlight'])->toBeTrue();
+
+    // Vérifier que chaque note de 0 à 10 a des commentaires détaillés pour C4, C5, C7 et C8
+    foreach ($rubric as $scoreItem) {
+        expect($scoreItem)->toHaveKeys(['c4', 'c5', 'c7', 'c8'])
+            ->and($scoreItem['c4'])->not->toBeEmpty()
+            ->and($scoreItem['c5'])->not->toBeEmpty()
+            ->and($scoreItem['c7'])->not->toBeEmpty()
+            ->and($scoreItem['c8'])->not->toBeEmpty();
+    }
+});

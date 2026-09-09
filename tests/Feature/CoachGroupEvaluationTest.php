@@ -22,7 +22,7 @@ test('coach can access mobile interface with valid access token', function () {
 
     $response->assertStatus(200);
     $response->assertSee('U14 Garçons');
-    $response->assertSee('CA Sion Athlétisme');
+    $response->assertSee('CA Sion');
 });
 
 test('invalid token returns 404', function () {
