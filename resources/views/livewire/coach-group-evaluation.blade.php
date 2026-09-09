@@ -75,6 +75,15 @@
                 @endphp
                 <div
                     wire:key="eval-card-{{ $eval->id }}"
+                    x-data="{
+                        injured: {{ $eval->is_injured ? 'true' : 'false' }},
+                        lateness: {{ $eval->lateness_count }},
+                        c4: {{ $eval->c4_commitment !== null ? (float)$eval->c4_commitment : 'null' }},
+                        c5: {{ $eval->c5_behavior !== null ? (float)$eval->c5_behavior : 'null' }},
+                        c6: '{{ $eval->c6_level?->value ?? '' }}',
+                        c7: {{ $eval->c7_progress !== null ? (float)$eval->c7_progress : 'null' }},
+                        c8: {{ $eval->c8_sports_hygiene !== null ? (float)$eval->c8_sports_hygiene : 'null' }},
+                    }"
                     class="bg-white rounded-2xl shadow-sm border {{ $eval->is_injured ? 'border-amber-300 ring-1 ring-amber-200' : ($isSubmitted ? 'border-slate-300 bg-slate-50/20' : 'border-slate-200') }} overflow-hidden transition-all duration-150"
                 >
                     <!-- En-tête de carte -->
@@ -179,11 +188,15 @@
                                 </div>
                                 <button
                                     type="button"
-                                    wire:click="toggleInjury({{ $eval->id }})"
+                                    @click="injured = !injured; $wire.toggleInjury({{ $eval->id }})"
                                     {{ ! $isEditable ? 'disabled' : '' }}
-                                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none {{ $eval->is_injured ? 'bg-amber-500' : 'bg-slate-300' }} {{ ! $isEditable ? 'opacity-50 cursor-not-allowed' : '' }}"
+                                    :class="injured ? 'bg-amber-500' : 'bg-slate-300'"
+                                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none {{ ! $isEditable ? 'opacity-50 cursor-not-allowed' : '' }}"
                                 >
-                                    <span class="translate-x-0 inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ $eval->is_injured ? 'translate-x-5' : 'translate-x-0' }}"></span>
+                                    <span
+                                        :class="injured ? 'translate-x-5' : 'translate-x-0'"
+                                        class="inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                                    ></span>
                                 </button>
                             </div>
 
@@ -201,18 +214,23 @@
                                 <div class="flex items-center gap-2">
                                     <button
                                         type="button"
-                                        wire:click="decrementLateness({{ $eval->id }})"
-                                        {{ ! $isEditable || $eval->lateness_count <= 0 ? 'disabled' : '' }}
+                                        @click="if (lateness > 0) { lateness--; $wire.decrementLateness({{ $eval->id }}); }"
+                                        {{ ! $isEditable ? 'disabled' : '' }}
+                                        :disabled="! {{ $isEditable ? 'true' : 'false' }} || lateness <= 0"
                                         class="w-8 h-8 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 flex items-center justify-center text-slate-700 font-bold active:scale-95 disabled:opacity-40 disabled:pointer-events-none transition-all"
                                     >
                                         -
                                     </button>
-                                    <span class="w-6 text-center font-black text-base {{ $eval->lateness_count > 0 ? 'text-red-600' : 'text-slate-800' }}">
+                                    <span
+                                        class="w-6 text-center font-black text-base"
+                                        :class="lateness > 0 ? 'text-red-600' : 'text-slate-800'"
+                                        x-text="lateness"
+                                    >
                                         {{ $eval->lateness_count }}
                                     </span>
                                     <button
                                         type="button"
-                                        wire:click="incrementLateness({{ $eval->id }})"
+                                        @click="lateness++; $wire.incrementLateness({{ $eval->id }})"
                                         {{ ! $isEditable ? 'disabled' : '' }}
                                         class="w-8 h-8 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 flex items-center justify-center text-slate-700 font-bold active:scale-95 disabled:opacity-40 disabled:pointer-events-none transition-all"
                                     >
@@ -238,15 +256,16 @@
                                         {{ $c4->code() }} : {{ $c4->getLabel() }}
                                         <svg class="w-3.5 h-3.5 text-slate-400 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                     </span>
-                                    <span class="text-xs font-extrabold text-red-600">{{ $eval->c4_commitment !== null ? number_format($eval->c4_commitment, 1) . ' / 10' : 'Non noté' }}</span>
+                                    <span class="text-xs font-extrabold text-red-600" x-text="c4 !== null ? (Number(c4).toFixed(1) + ' / 10') : 'Non noté'">{{ $eval->c4_commitment !== null ? number_format($eval->c4_commitment, 1) . ' / 10' : 'Non noté' }}</span>
                                 </div>
                                 <div class="flex flex-wrap gap-1">
                                     @for($i = 0; $i <= 10; $i++)
                                         <button
                                             type="button"
-                                            wire:click="setScore({{ $eval->id }}, 'c4_commitment', {{ $i }})"
+                                            @click="c4 = {{ $i }}; $wire.setScore({{ $eval->id }}, 'c4_commitment', {{ $i }})"
                                             {{ ! $isEditable ? 'disabled' : '' }}
-                                            class="flex-1 min-w-[28px] h-8 rounded-lg text-xs font-bold transition-all {{ $eval->c4_commitment !== null && (float)$eval->c4_commitment === (float)$i ? 'bg-red-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }} disabled:opacity-50"
+                                            :class="c4 !== null && Number(c4) === {{ $i }} ? 'bg-red-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+                                            class="flex-1 min-w-[28px] h-8 rounded-lg text-xs font-bold transition-all disabled:opacity-50"
                                         >
                                             {{ $i }}
                                         </button>
@@ -261,15 +280,16 @@
                                         {{ $c5->code() }} : {{ $c5->getLabel() }}
                                         <svg class="w-3.5 h-3.5 text-slate-400 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                     </span>
-                                    <span class="text-xs font-extrabold text-red-600">{{ $eval->c5_behavior !== null ? number_format($eval->c5_behavior, 1) . ' / 10' : 'Non noté' }}</span>
+                                    <span class="text-xs font-extrabold text-red-600" x-text="c5 !== null ? (Number(c5).toFixed(1) + ' / 10') : 'Non noté'">{{ $eval->c5_behavior !== null ? number_format($eval->c5_behavior, 1) . ' / 10' : 'Non noté' }}</span>
                                 </div>
                                 <div class="flex flex-wrap gap-1">
                                     @for($i = 0; $i <= 10; $i++)
                                         <button
                                             type="button"
-                                            wire:click="setScore({{ $eval->id }}, 'c5_behavior', {{ $i }})"
+                                            @click="c5 = {{ $i }}; $wire.setScore({{ $eval->id }}, 'c5_behavior', {{ $i }})"
                                             {{ ! $isEditable ? 'disabled' : '' }}
-                                            class="flex-1 min-w-[28px] h-8 rounded-lg text-xs font-bold transition-all {{ $eval->c5_behavior !== null && (float)$eval->c5_behavior === (float)$i ? 'bg-red-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }} disabled:opacity-50"
+                                            :class="c5 !== null && Number(c5) === {{ $i }} ? 'bg-red-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+                                            class="flex-1 min-w-[28px] h-8 rounded-lg text-xs font-bold transition-all disabled:opacity-50"
                                         >
                                             {{ $i }}
                                         </button>
@@ -284,18 +304,19 @@
                                         {{ $c6->code() }} : {{ $c6->getLabel() }}
                                         <svg class="w-3.5 h-3.5 text-slate-400 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                     </span>
-                                    <span class="text-xs font-extrabold text-red-600">{{ $eval->c6_level?->getLabel() ?? 'Non défini' }}</span>
+                                    <span class="text-xs font-extrabold text-red-600" x-text="c6 ? ('Palier ' + c6) : '{{ $eval->c6_level?->getLabel() ?? 'Non défini' }}'">{{ $eval->c6_level?->getLabel() ?? 'Non défini' }}</span>
                                 </div>
                                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                                     @foreach(\App\Enums\AthleticLevel::cases() as $level)
                                         <button
                                             type="button"
-                                            wire:click="setLevel({{ $eval->id }}, '{{ $level->value }}')"
+                                            @click="c6 = '{{ $level->value }}'; $wire.setLevel({{ $eval->id }}, '{{ $level->value }}')"
                                             {{ ! $isEditable ? 'disabled' : '' }}
-                                            class="py-2 px-2.5 rounded-xl text-xs font-bold text-center border transition-all {{ $eval->c6_level === $level ? 'bg-slate-900 border-slate-900 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50' }} disabled:opacity-50"
+                                            :class="c6 === '{{ $level->value }}' ? 'bg-slate-900 border-slate-900 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'"
+                                            class="py-2 px-2.5 rounded-xl text-xs font-bold text-center border transition-all disabled:opacity-50"
                                         >
                                             <div>{{ $level->getLabel() }}</div>
-                                            <div class="text-[10px] {{ $eval->c6_level === $level ? 'text-slate-300' : 'text-slate-400' }} font-normal">Palier {{ $level->score() }} pts</div>
+                                            <div class="text-[10px] font-normal" :class="c6 === '{{ $level->value }}' ? 'text-slate-300' : 'text-slate-400'">Palier {{ $level->score() }} pts</div>
                                         </button>
                                     @endforeach
                                 </div>
@@ -308,15 +329,16 @@
                                         {{ $c7->code() }} : {{ $c7->getLabel() }}
                                         <svg class="w-3.5 h-3.5 text-slate-400 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                     </span>
-                                    <span class="text-xs font-extrabold text-red-600">{{ $eval->c7_progress !== null ? number_format($eval->c7_progress, 1) . ' / 10' : 'Non noté' }}</span>
+                                    <span class="text-xs font-extrabold text-red-600" x-text="c7 !== null ? (Number(c7).toFixed(1) + ' / 10') : 'Non noté'">{{ $eval->c7_progress !== null ? number_format($eval->c7_progress, 1) . ' / 10' : 'Non noté' }}</span>
                                 </div>
                                 <div class="flex flex-wrap gap-1">
                                     @for($i = 0; $i <= 10; $i++)
                                         <button
                                             type="button"
-                                            wire:click="setScore({{ $eval->id }}, 'c7_progress', {{ $i }})"
+                                            @click="c7 = {{ $i }}; $wire.setScore({{ $eval->id }}, 'c7_progress', {{ $i }})"
                                             {{ ! $isEditable ? 'disabled' : '' }}
-                                            class="flex-1 min-w-[28px] h-8 rounded-lg text-xs font-bold transition-all {{ $eval->c7_progress !== null && (float)$eval->c7_progress === (float)$i ? 'bg-red-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }} disabled:opacity-50"
+                                            :class="c7 !== null && Number(c7) === {{ $i }} ? 'bg-red-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+                                            class="flex-1 min-w-[28px] h-8 rounded-lg text-xs font-bold transition-all disabled:opacity-50"
                                         >
                                             {{ $i }}
                                         </button>
@@ -331,15 +353,16 @@
                                         {{ $c8->code() }} : {{ $c8->getLabel() }}
                                         <svg class="w-3.5 h-3.5 text-slate-400 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                     </span>
-                                    <span class="text-xs font-extrabold text-red-600">{{ $eval->c8_sports_hygiene !== null ? number_format($eval->c8_sports_hygiene, 1) . ' / 10' : 'Non noté' }}</span>
+                                    <span class="text-xs font-extrabold text-red-600" x-text="c8 !== null ? (Number(c8).toFixed(1) + ' / 10') : 'Non noté'">{{ $eval->c8_sports_hygiene !== null ? number_format($eval->c8_sports_hygiene, 1) . ' / 10' : 'Non noté' }}</span>
                                 </div>
                                 <div class="flex flex-wrap gap-1">
                                     @for($i = 0; $i <= 10; $i++)
                                         <button
                                             type="button"
-                                            wire:click="setScore({{ $eval->id }}, 'c8_sports_hygiene', {{ $i }})"
+                                            @click="c8 = {{ $i }}; $wire.setScore({{ $eval->id }}, 'c8_sports_hygiene', {{ $i }})"
                                             {{ ! $isEditable ? 'disabled' : '' }}
-                                            class="flex-1 min-w-[28px] h-8 rounded-lg text-xs font-bold transition-all {{ $eval->c8_sports_hygiene !== null && (float)$eval->c8_sports_hygiene === (float)$i ? 'bg-red-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }} disabled:opacity-50"
+                                            :class="c8 !== null && Number(c8) === {{ $i }} ? 'bg-red-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+                                            class="flex-1 min-w-[28px] h-8 rounded-lg text-xs font-bold transition-all disabled:opacity-50"
                                         >
                                             {{ $i }}
                                         </button>
@@ -354,12 +377,14 @@
                                 Remarques de l'entraîneur (disciplinaires ou sportives)
                             </label>
                             <textarea
-                                wire:change="updateNotes({{ $eval->id }}, $event.target.value)"
+                                x-data="{ note: @js($eval->coach_notes ?? '') }"
+                                x-model="note"
+                                @change="$wire.updateNotes({{ $eval->id }}, note)"
                                 {{ ! $isEditable ? 'disabled' : '' }}
                                 rows="2"
                                 placeholder="Observations spécifiques pour le responsable technique..."
                                 class="w-full text-xs rounded-xl border-slate-300 shadow-sm focus:border-red-500 focus:ring-red-500 disabled:bg-slate-100 disabled:text-slate-500 p-2.5"
-                            >{{ $eval->coach_notes }}</textarea>
+                            ></textarea>
                         </div>
                     </div>
                 </div>
@@ -390,7 +415,15 @@
                             @php
                                 $isEditable = $eval->isEditable();
                             @endphp
-                            <tr wire:key="eval-row-{{ $eval->id }}" class="{{ $eval->is_injured ? 'bg-amber-50/40' : 'hover:bg-slate-50/60' }} transition-colors">
+                            <tr
+                                wire:key="eval-row-{{ $eval->id }}"
+                                x-data="{
+                                    injured: {{ $eval->is_injured ? 'true' : 'false' }},
+                                    lateness: {{ $eval->lateness_count }},
+                                    note: @js($eval->coach_notes ?? ''),
+                                }"
+                                class="{{ $eval->is_injured ? 'bg-amber-50/40' : 'hover:bg-slate-50/60' }} transition-colors"
+                            >
                                 <!-- Athlète -->
                                 <td class="py-3 px-4 whitespace-nowrap">
                                     <div class="font-bold text-slate-900">{{ $eval->athlete->last_name }} {{ $eval->athlete->first_name }}</div>
@@ -408,9 +441,11 @@
                                 <td class="py-3 px-3 text-center whitespace-nowrap">
                                     <button
                                         type="button"
-                                        wire:click="toggleInjury({{ $eval->id }})"
+                                        @click="injured = !injured; $wire.toggleInjury({{ $eval->id }})"
                                         {{ ! $isEditable ? 'disabled' : '' }}
-                                        class="px-2 py-1 rounded text-[11px] font-bold transition-colors {{ $eval->is_injured ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }} disabled:opacity-50"
+                                        :class="injured ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                                        class="px-2 py-1 rounded text-[11px] font-bold transition-colors disabled:opacity-50"
+                                        x-text="injured ? 'OUI' : 'NON'"
                                     >
                                         {{ $eval->is_injured ? 'OUI' : 'NON' }}
                                     </button>
@@ -421,14 +456,19 @@
                                     <div class="inline-flex items-center gap-1">
                                         <button
                                             type="button"
-                                            wire:click="decrementLateness({{ $eval->id }})"
-                                            {{ ! $isEditable || $eval->lateness_count <= 0 ? 'disabled' : '' }}
+                                            @click="if (lateness > 0) { lateness--; $wire.decrementLateness({{ $eval->id }}); }"
+                                            {{ ! $isEditable ? 'disabled' : '' }}
+                                            :disabled="! {{ $isEditable ? 'true' : 'false' }} || lateness <= 0"
                                             class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold disabled:opacity-40"
                                         >-</button>
-                                        <span class="w-5 text-center font-bold {{ $eval->lateness_count > 0 ? 'text-red-600' : 'text-slate-700' }}">{{ $eval->lateness_count }}</span>
+                                        <span
+                                            class="w-5 text-center font-bold"
+                                            :class="lateness > 0 ? 'text-red-600' : 'text-slate-700'"
+                                            x-text="lateness"
+                                        >{{ $eval->lateness_count }}</span>
                                         <button
                                             type="button"
-                                            wire:click="incrementLateness({{ $eval->id }})"
+                                            @click="lateness++; $wire.incrementLateness({{ $eval->id }})"
                                             {{ ! $isEditable ? 'disabled' : '' }}
                                             class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold disabled:opacity-40"
                                         >+</button>
@@ -509,9 +549,9 @@
                                 <td class="py-3 px-4">
                                     <input
                                         type="text"
-                                        wire:change="updateNotes({{ $eval->id }}, $event.target.value)"
+                                        x-model="note"
+                                        @change="$wire.updateNotes({{ $eval->id }}, note)"
                                         {{ ! $isEditable ? 'disabled' : '' }}
-                                        value="{{ $eval->coach_notes }}"
                                         placeholder="Remarque..."
                                         class="text-xs py-1 px-2 w-36 rounded-lg border-slate-300 focus:border-red-500 focus:ring-red-500 disabled:bg-slate-100"
                                     />

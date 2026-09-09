@@ -54,7 +54,6 @@ class CoachGroupEvaluation extends Component
         }
 
         $evaluation->is_injured = ! $evaluation->is_injured;
-        $evaluation->save();
         $calculator->calculateAthlete($evaluation);
     }
 
@@ -75,7 +74,6 @@ class CoachGroupEvaluation extends Component
         }
 
         $evaluation->{$field} = $value;
-        $evaluation->save();
         $calculator->calculateAthlete($evaluation);
     }
 
@@ -87,7 +85,6 @@ class CoachGroupEvaluation extends Component
         }
 
         $evaluation->c6_level = $level ? AthleticLevel::tryFrom($level) : null;
-        $evaluation->save();
         $calculator->calculateAthlete($evaluation);
     }
 
