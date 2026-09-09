@@ -32,7 +32,7 @@ return [
     |
     */
     'penalties' => [
-        'retard_deduction' => 0.5,
+        'retard_deduction' => 1.5,
     ],
 
     /*

@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Enums\AthleticLevel;
 use App\Enums\EvaluationContext;
+use App\Enums\EvaluationCriterion;
 use App\Enums\EvaluationStatus;
 use App\Models\Evaluation;
 use App\Models\Group;
@@ -59,7 +60,7 @@ class CoachGroupEvaluation extends Component
 
     public function setScore(int $evaluationId, string $field, ?float $value, EvaluationCalculatorService $calculator): void
     {
-        $allowedFields = ['c4_commitment', 'c5_behavior', 'c7_progress', 'c8_sports_hygiene'];
+        $allowedFields = EvaluationCriterion::qualitativeFields();
         if (! in_array($field, $allowedFields, true)) {
             return;
         }

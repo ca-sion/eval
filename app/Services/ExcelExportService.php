@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\EvaluationCriterion;
 use App\Enums\EvaluationDecision;
 use App\Models\Evaluation;
 use App\Models\EvaluationSession;
@@ -93,15 +94,15 @@ class ExcelExportService
                 'Licence',
                 'Blessé',
                 'Retards',
-                'Présences (C1)',
-                'Ponctualité (C2)',
-                'Compétitions (C3)',
-                'Implication (C4)',
-                'Comportement (C5)',
-                'Niveau (C6)',
-                'Progression (C7)',
-                'Hygiène (C8)',
-                'Bénévolat (C9)',
+                EvaluationCriterion::C1_Attendance->shortLabel().' ('.EvaluationCriterion::C1_Attendance->code().')',
+                EvaluationCriterion::C2_Punctuality->shortLabel().' ('.EvaluationCriterion::C2_Punctuality->code().')',
+                EvaluationCriterion::C3_Competitions->shortLabel().' ('.EvaluationCriterion::C3_Competitions->code().')',
+                EvaluationCriterion::C4_Commitment->shortLabel().' ('.EvaluationCriterion::C4_Commitment->code().')',
+                EvaluationCriterion::C5_Behavior->shortLabel().' ('.EvaluationCriterion::C5_Behavior->code().')',
+                EvaluationCriterion::C6_Performance->shortLabel().' ('.EvaluationCriterion::C6_Performance->code().')',
+                EvaluationCriterion::C7_Progress->shortLabel().' ('.EvaluationCriterion::C7_Progress->code().')',
+                EvaluationCriterion::C8_SportsHygiene->shortLabel().' ('.EvaluationCriterion::C8_SportsHygiene->code().')',
+                EvaluationCriterion::C9_Volunteering->shortLabel().' ('.EvaluationCriterion::C9_Volunteering->code().')',
                 'Moyenne Base',
                 'Bonus Club',
                 'Note Finale',

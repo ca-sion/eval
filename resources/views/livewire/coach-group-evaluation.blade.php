@@ -225,9 +225,19 @@
                         <!-- Critères qualitatifs (C4, C5, C7, C8) avec pastilles interactives 0 à 10 -->
                         <div class="space-y-4 pt-2 border-t border-slate-100">
                             <!-- C4 : Implication -->
+                            @php
+                                $c4 = \App\Enums\EvaluationCriterion::C4_Commitment;
+                                $c5 = \App\Enums\EvaluationCriterion::C5_Behavior;
+                                $c6 = \App\Enums\EvaluationCriterion::C6_Performance;
+                                $c7 = \App\Enums\EvaluationCriterion::C7_Progress;
+                                $c8 = \App\Enums\EvaluationCriterion::C8_SportsHygiene;
+                            @endphp
                             <div>
-                                <div class="flex items-center justify-between mb-1.5">
-                                    <span class="text-xs font-bold text-slate-700">C4 : Implication & Investissement (0 à 10)</span>
+                                <div class="flex items-center justify-between mb-1.5" title="{{ $c4->getDescription() }}">
+                                    <span class="text-xs font-bold text-slate-700 cursor-help flex items-center gap-1">
+                                        {{ $c4->code() }} : {{ $c4->getLabel() }}
+                                        <svg class="w-3.5 h-3.5 text-slate-400 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    </span>
                                     <span class="text-xs font-extrabold text-red-600">{{ $eval->c4_commitment !== null ? number_format($eval->c4_commitment, 1) . ' / 10' : 'Non noté' }}</span>
                                 </div>
                                 <div class="flex flex-wrap gap-1">
@@ -246,8 +256,11 @@
 
                             <!-- C5 : Comportement -->
                             <div>
-                                <div class="flex items-center justify-between mb-1.5">
-                                    <span class="text-xs font-bold text-slate-700">C5 : Comportement & Discipline (0 à 10)</span>
+                                <div class="flex items-center justify-between mb-1.5" title="{{ $c5->getDescription() }}">
+                                    <span class="text-xs font-bold text-slate-700 cursor-help flex items-center gap-1">
+                                        {{ $c5->code() }} : {{ $c5->getLabel() }}
+                                        <svg class="w-3.5 h-3.5 text-slate-400 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    </span>
                                     <span class="text-xs font-extrabold text-red-600">{{ $eval->c5_behavior !== null ? number_format($eval->c5_behavior, 1) . ' / 10' : 'Non noté' }}</span>
                                 </div>
                                 <div class="flex flex-wrap gap-1">
@@ -266,8 +279,11 @@
 
                             <!-- C6 : Niveau athlétique (Paliers) -->
                             <div>
-                                <div class="flex items-center justify-between mb-1.5">
-                                    <span class="text-xs font-bold text-slate-700">C6 : Niveau athlétique</span>
+                                <div class="flex items-center justify-between mb-1.5" title="{{ $c6->getDescription() }}">
+                                    <span class="text-xs font-bold text-slate-700 cursor-help flex items-center gap-1">
+                                        {{ $c6->code() }} : {{ $c6->getLabel() }}
+                                        <svg class="w-3.5 h-3.5 text-slate-400 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    </span>
                                     <span class="text-xs font-extrabold text-red-600">{{ $eval->c6_level?->getLabel() ?? 'Non défini' }}</span>
                                 </div>
                                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -287,8 +303,11 @@
 
                             <!-- C7 : Progression -->
                             <div>
-                                <div class="flex items-center justify-between mb-1.5">
-                                    <span class="text-xs font-bold text-slate-700">C7 : Progression sportive (0 à 10)</span>
+                                <div class="flex items-center justify-between mb-1.5" title="{{ $c7->getDescription() }}">
+                                    <span class="text-xs font-bold text-slate-700 cursor-help flex items-center gap-1">
+                                        {{ $c7->code() }} : {{ $c7->getLabel() }}
+                                        <svg class="w-3.5 h-3.5 text-slate-400 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    </span>
                                     <span class="text-xs font-extrabold text-red-600">{{ $eval->c7_progress !== null ? number_format($eval->c7_progress, 1) . ' / 10' : 'Non noté' }}</span>
                                 </div>
                                 <div class="flex flex-wrap gap-1">
@@ -307,8 +326,11 @@
 
                             <!-- C8 : Hygiène et environnement -->
                             <div>
-                                <div class="flex items-center justify-between mb-1.5">
-                                    <span class="text-xs font-bold text-slate-700">C8 : Hygiène de vie & Environnement (0 à 10)</span>
+                                <div class="flex items-center justify-between mb-1.5" title="{{ $c8->getDescription() }}">
+                                    <span class="text-xs font-bold text-slate-700 cursor-help flex items-center gap-1">
+                                        {{ $c8->code() }} : {{ $c8->getLabel() }}
+                                        <svg class="w-3.5 h-3.5 text-slate-400 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    </span>
                                     <span class="text-xs font-extrabold text-red-600">{{ $eval->c8_sports_hygiene !== null ? number_format($eval->c8_sports_hygiene, 1) . ' / 10' : 'Non noté' }}</span>
                                 </div>
                                 <div class="flex flex-wrap gap-1">
@@ -354,11 +376,11 @@
                             <th class="py-3 px-3">Statut</th>
                             <th class="py-3 px-3 text-center">Blessure</th>
                             <th class="py-3 px-3 text-center">Retards</th>
-                            <th class="py-3 px-3">C4 (Implic.)</th>
-                            <th class="py-3 px-3">C5 (Comport.)</th>
-                            <th class="py-3 px-3">C6 (Niveau)</th>
-                            <th class="py-3 px-3">C7 (Progr.)</th>
-                            <th class="py-3 px-3">C8 (Hygiène)</th>
+                            <th class="py-3 px-3 cursor-help" title="{{ \App\Enums\EvaluationCriterion::C4_Commitment->getDescription() }}">C4 ({{ \App\Enums\EvaluationCriterion::C4_Commitment->shortLabel() }})</th>
+                            <th class="py-3 px-3 cursor-help" title="{{ \App\Enums\EvaluationCriterion::C5_Behavior->getDescription() }}">C5 ({{ \App\Enums\EvaluationCriterion::C5_Behavior->shortLabel() }})</th>
+                            <th class="py-3 px-3 cursor-help" title="{{ \App\Enums\EvaluationCriterion::C6_Performance->getDescription() }}">C6 ({{ \App\Enums\EvaluationCriterion::C6_Performance->shortLabel() }})</th>
+                            <th class="py-3 px-3 cursor-help" title="{{ \App\Enums\EvaluationCriterion::C7_Progress->getDescription() }}">C7 ({{ \App\Enums\EvaluationCriterion::C7_Progress->shortLabel() }})</th>
+                            <th class="py-3 px-3 cursor-help" title="{{ \App\Enums\EvaluationCriterion::C8_SportsHygiene->getDescription() }}">C8 ({{ \App\Enums\EvaluationCriterion::C8_SportsHygiene->shortLabel() }})</th>
                             <th class="py-3 px-4">Notes</th>
                             <th class="py-3 px-3 text-center">État</th>
                         </tr>

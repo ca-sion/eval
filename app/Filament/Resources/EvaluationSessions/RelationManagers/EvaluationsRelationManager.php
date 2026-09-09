@@ -4,6 +4,7 @@ namespace App\Filament\Resources\EvaluationSessions\RelationManagers;
 
 use App\Enums\AthleteStatus;
 use App\Enums\EvaluationContext;
+use App\Enums\EvaluationCriterion;
 use App\Enums\EvaluationDecision;
 use App\Models\Evaluation;
 use App\Models\Group;
@@ -68,7 +69,8 @@ class EvaluationsRelationManager extends RelationManager
 
                 // Live Inline Editing
                 TextInputColumn::make('real_attendances')
-                    ->label('Présences NDS (C1)')
+                    ->label(EvaluationCriterion::C1_Attendance->code().' '.EvaluationCriterion::C1_Attendance->shortLabel())
+                    ->tooltip(EvaluationCriterion::C1_Attendance->getDescription())
                     ->alignCenter()
                     ->rules(['nullable', 'numeric', 'min:0'])
                     ->afterStateUpdated(function (Evaluation $record): void {
@@ -76,7 +78,8 @@ class EvaluationsRelationManager extends RelationManager
                     }),
 
                 TextInputColumn::make('competitions_done')
-                    ->label('Compét. (C3)')
+                    ->label(EvaluationCriterion::C3_Competitions->code().' '.EvaluationCriterion::C3_Competitions->shortLabel())
+                    ->tooltip(EvaluationCriterion::C3_Competitions->getDescription())
                     ->alignCenter()
                     ->rules(['numeric', 'min:0'])
                     ->afterStateUpdated(function (Evaluation $record): void {
@@ -84,7 +87,8 @@ class EvaluationsRelationManager extends RelationManager
                     }),
 
                 TextInputColumn::make('parent_volunteering_count')
-                    ->label('Bénévolat (C9)')
+                    ->label(EvaluationCriterion::C9_Volunteering->code().' '.EvaluationCriterion::C9_Volunteering->shortLabel())
+                    ->tooltip(EvaluationCriterion::C9_Volunteering->getDescription())
                     ->alignCenter()
                     ->rules(['numeric', 'min:0'])
                     ->afterStateUpdated(function (Evaluation $record): void {
@@ -98,7 +102,7 @@ class EvaluationsRelationManager extends RelationManager
                     }),
 
                 ToggleColumn::make('has_club_engagement')
-                    ->label('Bonus (+0.75)')
+                    ->label('Bonus')
                     ->afterStateUpdated(function (Evaluation $record): void {
                         app(EvaluationCalculatorService::class)->calculateAthlete($record);
                     }),

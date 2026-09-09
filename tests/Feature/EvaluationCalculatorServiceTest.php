@@ -2,6 +2,7 @@
 
 use App\Enums\ArbitrageMode;
 use App\Enums\AthleticLevel;
+use App\Enums\EvaluationCriterion;
 use App\Enums\EvaluationDecision;
 use App\Models\Athlete;
 use App\Models\Evaluation;
@@ -373,4 +374,75 @@ test('arbitrateGroup applies Threshold decisions correctly', function () {
 
     // Athlete 3 < 6.0 -> NotRetained
     expect($results[2]->decision)->toEqual(EvaluationDecision::NotRetained);
+});
+
+test('evaluation criteria enum methods work correctly', function () {
+    $cases = EvaluationCriterion::cases();
+    expect($cases)->toHaveCount(9);
+
+    foreach ($cases as $criterion) {
+        expect($criterion->code())->toStartWith('C')
+            ->and($criterion->getLabel())->not->toBeEmpty()
+            ->and($criterion->shortLabel())->not->toBeEmpty()
+            ->and($criterion->getDescription())->not->toBeEmpty()
+            ->and($criterion->scoreColumn())->not->toBeEmpty()
+            ->and($criterion->defaultWeight())->toBeGreaterThan(0.0)
+            ->and($criterion->scale())->toHaveKeys(['min', 'max', 'step', 'default'])
+            ->and($criterion->getColor())->not->toBeNull();
+    }
+
+    expect(EvaluationCriterion::qualitativeCases())->toHaveCount(4)
+        ->and(EvaluationCriterion::qualitativeFields())->toEqual([
+            'c4_commitment',
+            'c5_behavior',
+            'c7_progress',
+            'c8_sports_hygiene',
+        ]);
+
+    expect(EvaluationCriterion::C1_Attendance->isNeutralizedOnInjury())->toBeTrue()
+        ->and(EvaluationCriterion::C3_Competitions->isNeutralizedOnInjury())->toBeTrue()
+        ->and(EvaluationCriterion::C2_Punctuality->isNeutralizedOnInjury())->toBeFalse();
+
+    $group = Group::create([
+        'name' => 'U16 Crit Test',
+        'max_volunteering_age' => 17,
+        'required_volunteering_count' => 2,
+    ]);
+
+    $athlete = Athlete::create([
+        'group_id' => $group->id,
+        'first_name' => 'Chloé',
+        'last_name' => 'Bagnoud',
+        'birth_year' => 2012,
+    ]);
+
+    $eval = Evaluation::create([
+        'athlete_id' => $athlete->id,
+        'group_id' => $group->id,
+        'start_date' => '2026-09-01',
+        'end_date' => '2026-10-06',
+        'sessions_per_week' => 3,
+        'weeks_count' => 5,
+        'real_attendances' => 12,
+        'lateness_count' => 2,
+        'competitions_planned' => 6,
+        'competitions_done' => 5,
+        'c4_commitment' => 8.5,
+        'c5_behavior' => 9.0,
+        'c6_level' => AthleticLevel::Romand,
+        'c7_progress' => 8.0,
+        'c8_sports_hygiene' => 7.5,
+        'parent_volunteering_count' => 3,
+        'is_injured' => false,
+    ]);
+
+    expect(EvaluationCriterion::C1_Attendance->calculateScore($eval))->toEqual(8.0)
+        ->and(EvaluationCriterion::C2_Punctuality->calculateScore($eval))->toEqual(7.0)
+        ->and(EvaluationCriterion::C3_Competitions->calculateScore($eval))->toEqual(8.33)
+        ->and(EvaluationCriterion::C4_Commitment->calculateScore($eval))->toEqual(8.5)
+        ->and(EvaluationCriterion::C5_Behavior->calculateScore($eval))->toEqual(9.0)
+        ->and(EvaluationCriterion::C6_Performance->calculateScore($eval))->toEqual(7.5)
+        ->and(EvaluationCriterion::C7_Progress->calculateScore($eval))->toEqual(8.0)
+        ->and(EvaluationCriterion::C8_SportsHygiene->calculateScore($eval))->toEqual(7.5)
+        ->and(EvaluationCriterion::C9_Volunteering->calculateScore($eval))->toEqual(8.75);
 });

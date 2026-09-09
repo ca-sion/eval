@@ -79,10 +79,21 @@
             </tr>
         </thead>
         <tbody>
+            @php
+                $c1 = \App\Enums\EvaluationCriterion::C1_Attendance;
+                $c2 = \App\Enums\EvaluationCriterion::C2_Punctuality;
+                $c3 = \App\Enums\EvaluationCriterion::C3_Competitions;
+                $c4 = \App\Enums\EvaluationCriterion::C4_Commitment;
+                $c5 = \App\Enums\EvaluationCriterion::C5_Behavior;
+                $c6 = \App\Enums\EvaluationCriterion::C6_Performance;
+                $c7 = \App\Enums\EvaluationCriterion::C7_Progress;
+                $c8 = \App\Enums\EvaluationCriterion::C8_SportsHygiene;
+                $c9 = \App\Enums\EvaluationCriterion::C9_Volunteering;
+            @endphp
             <tr>
-                <td><strong>C1 : Assiduité</strong></td>
+                <td><strong>{{ $c1->code() }} : {{ $c1->shortLabel() }}</strong></td>
                 <td>NDS Jeunesse+Sport</td>
-                <td style="text-align: center;">20%</td>
+                <td style="text-align: center;">{{ number_format($c1->defaultWeight() * 100, 0) }}%</td>
                 <td style="text-align: center;">
                     @if($evaluation->is_injured)
                         <span style="color: #d97706; font-style: italic;">Neutralisé (Blessure)</span>
@@ -95,18 +106,18 @@
                 <td>{{ $evaluation->real_attendances ?? 0 }} présences sur {{ $evaluation->sessions_per_week * $evaluation->weeks_count }} prévues</td>
             </tr>
             <tr>
-                <td><strong>C2 : Ponctualité</strong></td>
+                <td><strong>{{ $c2->code() }} : {{ $c2->shortLabel() }}</strong></td>
                 <td>Pointage entraîneur</td>
-                <td style="text-align: center;">5%</td>
+                <td style="text-align: center;">{{ number_format($c2->defaultWeight() * 100, 0) }}%</td>
                 <td style="text-align: center;" class="{{ $evaluation->c2_score < 6 ? 'score-bad' : 'score-good' }}">
                     {{ number_format($evaluation->c2_score, 2) }} / 10
                 </td>
-                <td>{{ $evaluation->lateness_count }} retards (-1.5 pt/retard)</td>
+                <td>{{ $evaluation->lateness_count }} retards (-{{ config('evaluation.penalties.retard_deduction', 1.5) }} pt/retard)</td>
             </tr>
             <tr>
-                <td><strong>C3 : Compétitions</strong></td>
+                <td><strong>{{ $c3->code() }} : {{ $c3->shortLabel() }}</strong></td>
                 <td>Tiiva Club</td>
-                <td style="text-align: center;">15%</td>
+                <td style="text-align: center;">{{ number_format($c3->defaultWeight() * 100, 0) }}%</td>
                 <td style="text-align: center;">
                     @if($evaluation->is_injured)
                         <span style="color: #d97706; font-style: italic;">Neutralisé (Blessure)</span>
@@ -119,54 +130,54 @@
                 <td>{{ $evaluation->competitions_done }} effectuées / {{ $evaluation->competitions_planned }} prévues</td>
             </tr>
             <tr>
-                <td><strong>C4 : Implication</strong></td>
+                <td><strong>{{ $c4->code() }} : {{ $c4->shortLabel() }}</strong></td>
                 <td>Entraîneur</td>
-                <td style="text-align: center;">15%</td>
+                <td style="text-align: center;">{{ number_format($c4->defaultWeight() * 100, 0) }}%</td>
                 <td style="text-align: center;" class="{{ $evaluation->c4_commitment !== null && $evaluation->c4_commitment < 6 ? 'score-bad' : 'score-good' }}">
                     {{ $evaluation->c4_commitment !== null ? number_format($evaluation->c4_commitment, 1) . ' / 10' : 'Non noté' }}
                 </td>
-                <td>Investissement et dynamisme aux entraînements</td>
+                <td>{{ $c4->getDescription() }}</td>
             </tr>
             <tr>
-                <td><strong>C5 : Comportement</strong></td>
+                <td><strong>{{ $c5->code() }} : {{ $c5->shortLabel() }}</strong></td>
                 <td>Entraîneur</td>
-                <td style="text-align: center;">15%</td>
+                <td style="text-align: center;">{{ number_format($c5->defaultWeight() * 100, 0) }}%</td>
                 <td style="text-align: center;" class="{{ $evaluation->c5_behavior !== null && $evaluation->c5_behavior < 6 ? 'score-bad' : 'score-good' }}">
                     {{ $evaluation->c5_behavior !== null ? number_format($evaluation->c5_behavior, 1) . ' / 10' : 'Non noté' }}
                 </td>
-                <td>Esprit sportif, respect des pairs et encadrement</td>
+                <td>{{ $c5->getDescription() }}</td>
             </tr>
             <tr>
-                <td><strong>C6 : Niveau athlétique</strong></td>
+                <td><strong>{{ $c6->code() }} : {{ $c6->shortLabel() }}</strong></td>
                 <td>Performances</td>
-                <td style="text-align: center;">10%</td>
+                <td style="text-align: center;">{{ number_format($c6->defaultWeight() * 100, 0) }}%</td>
                 <td style="text-align: center;" class="score-good">
                     {{ $evaluation->c6_score !== null ? number_format($evaluation->c6_score, 2) . ' / 10' : 'Non défini' }}
                 </td>
                 <td>Palier : {{ $evaluation->c6_level?->getLabel() ?? '-' }}</td>
             </tr>
             <tr>
-                <td><strong>C7 : Progression</strong></td>
+                <td><strong>{{ $c7->code() }} : {{ $c7->shortLabel() }}</strong></td>
                 <td>Entraîneur</td>
-                <td style="text-align: center;">10%</td>
+                <td style="text-align: center;">{{ number_format($c7->defaultWeight() * 100, 0) }}%</td>
                 <td style="text-align: center;" class="{{ $evaluation->c7_progress !== null && $evaluation->c7_progress < 6 ? 'score-bad' : 'score-good' }}">
                     {{ $evaluation->c7_progress !== null ? number_format($evaluation->c7_progress, 1) . ' / 10' : 'Non noté' }}
                 </td>
-                <td>Évolution technique et chronométrique</td>
+                <td>{{ $c7->getDescription() }}</td>
             </tr>
             <tr>
-                <td><strong>C8 : Hygiène de vie</strong></td>
+                <td><strong>{{ $c8->code() }} : {{ $c8->shortLabel() }}</strong></td>
                 <td>Entraîneur</td>
-                <td style="text-align: center;">5%</td>
+                <td style="text-align: center;">{{ number_format($c8->defaultWeight() * 100, 0) }}%</td>
                 <td style="text-align: center;" class="{{ $evaluation->c8_sports_hygiene !== null && $evaluation->c8_sports_hygiene < 6 ? 'score-bad' : 'score-good' }}">
                     {{ $evaluation->c8_sports_hygiene !== null ? number_format($evaluation->c8_sports_hygiene, 1) . ' / 10' : 'Non noté' }}
                 </td>
-                <td>Sommeil, nutrition, équipement adapté</td>
+                <td>{{ $c8->getDescription() }}</td>
             </tr>
             <tr>
-                <td><strong>C9 : Bénévolat parents</strong></td>
+                <td><strong>{{ $c9->code() }} : {{ $c9->shortLabel() }}</strong></td>
                 <td>Administration</td>
-                <td style="text-align: center;">5%</td>
+                <td style="text-align: center;">{{ number_format($c9->defaultWeight() * 100, 0) }}%</td>
                 <td style="text-align: center;">
                     @if($evaluation->c9_score !== null)
                         <span class="{{ $evaluation->c9_score < 6 ? 'score-bad' : 'score-good' }}">{{ number_format($evaluation->c9_score, 2) }} / 10</span>
