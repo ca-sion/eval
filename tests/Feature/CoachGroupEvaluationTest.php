@@ -64,8 +64,8 @@ test('contextual loading shows all athletes during collective session', function
     ]);
 
     Livewire::test(CoachGroupEvaluation::class, ['group' => $group])
-        ->assertSee('Dubois Emma')
-        ->assertSee('Favre Lucas')
+        ->assertSee('Emma Dubois')
+        ->assertSee('Lucas Favre')
         ->assertSee('Session Automne 2026');
 });
 
@@ -98,9 +98,9 @@ test('outside collective session only athletes in active cycle are shown', funct
     ]);
 
     Livewire::test(CoachGroupEvaluation::class, ['group' => $group])
-        ->assertSee('Nouveau Samy')
+        ->assertSee('Samy Nouveau')
         ->assertSee('Adaptation')
-        ->assertDontSee('Ancien Alex');
+        ->assertDontSee('Alex Ancien');
 });
 
 test('lateness counter increment and decrement update evaluation in real time', function () {

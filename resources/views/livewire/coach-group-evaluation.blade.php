@@ -1,5 +1,5 @@
 <div x-data="{
-    view: localStorage.getItem('coach_view') || 'cards',
+    view: localStorage.getItem('coach_view') || 'table',
     setView(v) {
         this.view = v;
         localStorage.setItem('coach_view', v);
@@ -17,7 +17,7 @@
             </div>
             <p class="text-sm text-slate-500 mt-0.5">
                 @if($hasCollectiveSession)
-                    Session générale d'évaluation en cours
+                    Période d'évaluation en cours
                 @else
                     Suivi des cycles d'adaptation et de sursis
                 @endif
@@ -94,7 +94,7 @@
                             </div>
                             <div class="min-w-0 flex-1">
                                 <h3 class="text-base font-bold text-slate-900 leading-snug truncate">
-                                    {{ $eval->athlete->last_name }} {{ $eval->athlete->first_name }}
+                                    {{ $eval->athlete->first_name }} {{ $eval->athlete->last_name }}
                                 </h3>
                                 <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1 text-xs">
                                     <span class="text-slate-500 font-medium whitespace-nowrap">Né(e) en {{ $eval->athlete->birth_year }}</span>
@@ -102,15 +102,15 @@
                                     <!-- Badge de contexte -->
                                     @if($eval->context === \App\Enums\EvaluationContext::Collective)
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-800 whitespace-nowrap">
-                                            {{ $eval->session?->title ?? 'Session générale' }}
+                                            {{ $eval->session?->title ?? 'Période d\'évaluation' }}
                                         </span>
                                     @elseif($eval->context === \App\Enums\EvaluationContext::Adaptation)
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 whitespace-nowrap">
-                                            Adaptation (S{{ $eval->currentWeekNumber() }}/{{ $eval->weeks_count }})
+                                            {{ $eval->context->getLabel() }} (S{{ $eval->currentWeekNumber() }}/{{ $eval->weeks_count }})
                                         </span>
                                     @else
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-red-100 text-red-800 whitespace-nowrap">
-                                            Sursis probatoire (S{{ $eval->currentWeekNumber() }}/{{ $eval->weeks_count }})
+                                            {{ $eval->context->getLabel() }} (S{{ $eval->currentWeekNumber() }}/{{ $eval->weeks_count }})
                                         </span>
                                     @endif
                                 </div>
@@ -175,31 +175,6 @@
 
                         <!-- Rangée 1 : Blessure & Compteur de Retards -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                            <!-- Toggle Blessure majeure -->
-                            <div class="rounded-xl border {{ $eval->is_injured ? 'border-amber-300 bg-amber-50/60' : 'border-slate-200 bg-slate-50/50' }} p-3.5 flex items-center justify-between">
-                                <div>
-                                    <span class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                                        <svg class="w-4 h-4 {{ $eval->is_injured ? 'text-amber-600' : 'text-slate-400' }}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-                                        </svg>
-                                        Blessure majeure ?
-                                    </span>
-                                    <p class="text-[11px] text-slate-500 mt-0.5">Neutralise l'assiduité & compétitions</p>
-                                </div>
-                                <button
-                                    type="button"
-                                    @click="injured = !injured; $wire.toggleInjury({{ $eval->id }})"
-                                    {{ ! $isEditable ? 'disabled' : '' }}
-                                    :class="injured ? 'bg-amber-500' : 'bg-slate-300'"
-                                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none {{ ! $isEditable ? 'opacity-50 cursor-not-allowed' : '' }}"
-                                >
-                                    <span
-                                        :class="injured ? 'translate-x-5' : 'translate-x-0'"
-                                        class="inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
-                                    ></span>
-                                </button>
-                            </div>
-
                             <!-- Compteur de retards -->
                             <div class="rounded-xl border border-slate-200 bg-slate-50/50 p-3.5 flex items-center justify-between">
                                 <div>
@@ -237,6 +212,31 @@
                                         +
                                     </button>
                                 </div>
+                            </div>
+                            
+                            <!-- Toggle Blessure majeure -->
+                            <div class="rounded-xl border {{ $eval->is_injured ? 'border-amber-300 bg-amber-50/60' : 'border-slate-200 bg-slate-50/50' }} p-3.5 flex items-center justify-between">
+                                <div>
+                                    <span class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                                        <svg class="w-4 h-4 {{ $eval->is_injured ? 'text-amber-600' : 'text-slate-400' }}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+                                        </svg>
+                                        Blessure majeure ?
+                                    </span>
+                                    <p class="text-[11px] text-slate-500 mt-0.5">Neutralise l'assiduité & compétitions</p>
+                                </div>
+                                <button
+                                    type="button"
+                                    @click="injured = !injured; $wire.toggleInjury({{ $eval->id }})"
+                                    {{ ! $isEditable ? 'disabled' : '' }}
+                                    :class="injured ? 'bg-amber-500' : 'bg-slate-300'"
+                                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none {{ ! $isEditable ? 'opacity-50 cursor-not-allowed' : '' }}"
+                                >
+                                    <span
+                                        :class="injured ? 'translate-x-5' : 'translate-x-0'"
+                                        class="inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                                    ></span>
+                                </button>
                             </div>
                         </div>
 
@@ -398,8 +398,8 @@
                         <tr>
                             <th class="py-2.5 px-3 sm:px-4 sticky left-0 z-20 bg-slate-50 border-r border-slate-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)] min-w-[130px] sm:min-w-[160px]">Athlète</th>
                             <th class="py-2.5 px-2 text-center w-20 sm:w-24 whitespace-nowrap">Statut</th>
-                            <th class="py-2.5 px-1.5 text-center w-14 sm:w-16 whitespace-nowrap">Blessure</th>
                             <th class="py-2.5 px-1.5 text-center w-16 sm:w-20 whitespace-nowrap">Retards</th>
+                            <th class="py-2.5 px-1.5 text-center w-14 sm:w-16 whitespace-nowrap">Blessure</th>
                             <th class="py-2 px-1 text-center w-12 sm:w-14 cursor-help" title="{{ \App\Enums\EvaluationCriterion::C4_Commitment->getDescription() }}">
                                 <div class="font-black text-slate-900 text-xs">C4</div>
                                 <div class="text-[9px] font-semibold text-slate-400 normal-case block truncate max-w-[48px] mx-auto leading-tight" title="{{ \App\Enums\EvaluationCriterion::C4_Commitment->shortLabel() }}">{{ \App\Enums\EvaluationCriterion::C4_Commitment->shortLabel() }}</div>
@@ -443,29 +443,15 @@
                                     class="py-2.5 px-3 sm:px-4 whitespace-nowrap sticky left-0 z-10 border-r border-slate-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)] transition-colors"
                                     :class="injured ? 'bg-amber-50' : 'bg-white group-hover:bg-slate-50'"
                                 >
-                                    <div class="font-bold text-slate-900 leading-tight">{{ $eval->athlete->last_name }} {{ $eval->athlete->first_name }}</div>
+                                    <div class="font-bold text-slate-900 leading-tight">{{ $eval->athlete->first_name }} {{ $eval->athlete->last_name }}</div>
                                     <div class="text-[10px] text-slate-400">Né(e) {{ $eval->athlete->birth_year }}</div>
                                 </td>
 
                                 <!-- Contexte -->
                                 <td class="py-2.5 px-2 text-center whitespace-nowrap">
                                     <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold {{ $eval->context === \App\Enums\EvaluationContext::Collective ? 'bg-blue-100 text-blue-800' : ($eval->context === \App\Enums\EvaluationContext::Adaptation ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800') }}">
-                                        {{ $eval->context === \App\Enums\EvaluationContext::Collective ? 'Générale' : ($eval->context === \App\Enums\EvaluationContext::Adaptation ? 'Adapt. (S'.$eval->currentWeekNumber().'/'.$eval->weeks_count.')' : 'Sursis (S'.$eval->currentWeekNumber().'/'.$eval->weeks_count.')') }}
+                                        {{ $eval->context->shortLabel() }} (S{{ $eval->currentWeekNumber() }}/{{ $eval->weeks_count }})
                                     </span>
-                                </td>
-
-                                <!-- Blessure -->
-                                <td class="py-2.5 px-1.5 text-center whitespace-nowrap">
-                                    <button
-                                        type="button"
-                                        @click="injured = !injured; $wire.toggleInjury({{ $eval->id }})"
-                                        {{ ! $isEditable ? 'disabled' : '' }}
-                                        :class="injured ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
-                                        class="px-2 py-0.5 rounded text-[10px] font-bold transition-colors disabled:opacity-50"
-                                        x-text="injured ? 'OUI' : 'NON'"
-                                    >
-                                        {{ $eval->is_injured ? 'OUI' : 'NON' }}
-                                    </button>
                                 </td>
 
                                 <!-- Retards -->
@@ -490,6 +476,20 @@
                                             class="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs disabled:opacity-40 flex items-center justify-center active:scale-95"
                                         >+</button>
                                     </div>
+                                </td>
+
+                                <!-- Blessure -->
+                                <td class="py-2.5 px-1.5 text-center whitespace-nowrap">
+                                    <button
+                                        type="button"
+                                        @click="injured = !injured; $wire.toggleInjury({{ $eval->id }})"
+                                        {{ ! $isEditable ? 'disabled' : '' }}
+                                        :class="injured ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                                        class="px-2 py-0.5 rounded text-[10px] font-bold transition-colors disabled:opacity-50"
+                                        x-text="injured ? 'OUI' : 'NON'"
+                                    >
+                                        {{ $eval->is_injured ? 'OUI' : 'NON' }}
+                                    </button>
                                 </td>
 
                                 <!-- C4 -->
@@ -622,7 +622,9 @@
             scores: @js(\App\Enums\EvaluationCriterion::qualitativeRubric()),
             tiers: @js(\App\Enums\EvaluationCriterion::qualitativeTiers()),
         }"
-        class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition-all mt-8"
+        id="baremes"
+        x-on:open-baremes.window="openGuide = true"
+        class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition-all mt-8 scroll-mt-20"
     >
         <!-- En-tête du guide -->
         <div
@@ -636,14 +638,11 @@
                 <div class="min-w-0 flex-1">
                     <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1">
                         <h3 class="text-sm sm:text-base font-extrabold tracking-tight text-white leading-snug">
-                            Barème d'étalonnage des notes (0 à 10)
+                            Barème des notes
                         </h3>
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-blue-500/20 text-blue-300 border border-blue-400/30 whitespace-nowrap">
-                            ★ 5 = standard attendu
-                        </span>
                     </div>
                     <p class="text-xs text-slate-300 mt-0.5 leading-snug">
-                        Guide officiel CA Sion pour garantir une échelle de notation équitable entre tous les entraîneurs
+                        Guide officiel pour garantir une échelle de notation équitable entre tous les entraîneurs
                     </p>
                 </div>
             </div>
@@ -666,26 +665,26 @@
         <div x-show="openGuide" x-collapse class="p-5 sm:p-6 space-y-6">
 
             <!-- Message d'étalonnage fondamental (Le repère 5/10) -->
-            <div class="rounded-xl bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 border border-blue-200 p-4 sm:p-5 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+            <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4 sm:p-5 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
                 <div class="space-y-1.5 flex-1 min-w-0">
                     <div class="flex items-center gap-2">
-                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white font-black text-xs flex-shrink-0">5</span>
-                        <h4 class="text-sm font-bold text-blue-900">
-                            5 / 10 = le standard attendu au CA Sion
+                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-slate-900 text-white font-black text-xs flex-shrink-0">5</span>
+                        <h4 class="text-sm font-bold text-slate-900">
+                            est le standard attendu
                         </h4>
                     </div>
-                    <p class="text-xs text-blue-800 leading-relaxed max-w-2xl">
+                    <p class="text-xs text-slate-600 leading-relaxed max-w-2xl">
                         <strong>5 n'est pas une mauvaise note</strong> : c'est le standard attendu par le club. L'athlète répond fidèlement, sérieusement et avec constance aux exigences du critère évalué. La note <strong>10</strong> est réservée à des réalisations véritablement exceptionnelles et rares.
                     </p>
                 </div>
-                <div class="flex flex-wrap items-center gap-2 self-stretch lg:self-auto justify-start lg:justify-end flex-shrink-0">
-                    <span class="px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold bg-red-100 text-red-800 border border-red-200 whitespace-nowrap">
+                <div class="flex flex-wrap items-center gap-2 self-stretch lg:self-auto justify-start lg:justify-end flex-shrink-0 text-xs">
+                    <span class="px-2.5 py-1 rounded-lg font-medium bg-white text-slate-700 border border-slate-200 whitespace-nowrap">
                         0 = Non acquis
                     </span>
-                    <span class="px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold bg-blue-100 text-blue-800 border border-blue-300 ring-2 ring-blue-500/20 whitespace-nowrap">
-                        5 = Standard acquis
+                    <span class="px-2.5 py-1 rounded-lg font-bold bg-slate-900 text-white whitespace-nowrap shadow-xs">
+                        5 = Acquis
                     </span>
-                    <span class="px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold bg-purple-100 text-purple-800 border border-purple-200 whitespace-nowrap">
+                    <span class="px-2.5 py-1 rounded-lg font-medium bg-white text-slate-700 border border-slate-200 whitespace-nowrap">
                         10 = Exceptionnel
                     </span>
                 </div>
@@ -699,36 +698,36 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                     @foreach(\App\Enums\EvaluationCriterion::qualitativeTiers() as $key => $tier)
                         <div
-                            class="rounded-xl border {{ $tier['border_color'] }} {{ $tier['bg_color'] }} p-3.5 flex flex-col justify-between transition-all hover:shadow-sm"
+                            class="rounded-xl border {{ $tier['highlight'] ? 'border-slate-400/80 bg-slate-50/70 ring-1 ring-slate-300/60' : 'border-slate-200 bg-white' }} p-3.5 flex flex-col justify-between transition-all hover:border-slate-300 hover:shadow-xs"
                         >
                             <div>
-                                <div class="flex items-center justify-between mb-1.5">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-black {{ $tier['badge_color'] }}">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold {{ $tier['highlight'] ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700 border border-slate-200' }}">
                                         {{ $tier['range'] }}
                                     </span>
                                     @if($tier['highlight'])
-                                        <span class="text-[10px] font-extrabold text-blue-600 uppercase tracking-tight">Clé</span>
+                                        <span class="text-[10px] font-extrabold text-slate-900 uppercase tracking-tight">Standard</span>
                                     @endif
                                 </div>
-                                <h5 class="text-xs font-extrabold text-slate-900 leading-snug">
+                                <h5 class="text-xs font-bold text-slate-900 leading-snug">
                                     {{ $tier['name'] }}
                                 </h5>
-                                <div class="text-[11px] font-medium {{ $tier['text_color'] }} mb-2">
+                                <div class="text-[11px] text-slate-500 mb-2 font-medium">
                                     {{ $tier['subtitle'] }}
                                 </div>
                                 <p class="text-[11px] text-slate-600 leading-snug">
                                     {{ $tier['summary'] }}
                                 </p>
                             </div>
-                            <div class="mt-3 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px] text-slate-500">
+                            <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500">
                                 <span>Scores :</span>
                                 <div class="flex gap-1">
                                     @foreach($tier['scores'] as $sc)
                                         <button
                                             type="button"
                                             @click="activeScore = {{ $sc }}"
-                                            :class="activeScore === {{ $sc }} ? 'bg-slate-900 text-white font-bold' : 'bg-white text-slate-700 hover:bg-slate-100'"
-                                            class="w-5 h-5 rounded border border-slate-300 flex items-center justify-center transition-colors"
+                                            :class="activeScore === {{ $sc }} ? 'bg-slate-900 text-white font-bold' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'"
+                                            class="w-5 h-5 rounded flex items-center justify-center transition-colors text-[10px]"
                                         >
                                             {{ $sc }}
                                         </button>
@@ -760,7 +759,7 @@
                         <button
                             type="button"
                             @click="activeScore = {{ $s }}"
-                            :class="activeScore === {{ $s }} ? 'bg-red-600 text-white shadow-sm ring-2 ring-red-500/30 scale-105' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'"
+                            :class="activeScore === {{ $s }} ? 'bg-slate-900 text-white shadow-sm font-black' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/80'"
                             class="flex-1 min-w-[34px] h-9 rounded-xl font-bold text-xs transition-all flex items-center justify-center flex-shrink-0"
                         >
                             {{ $s }}
@@ -777,8 +776,7 @@
                                 x-text="activeScore"
                             ></span>
                             <span
-                                class="px-2.5 py-0.5 rounded-full text-xs font-bold border"
-                                :class="scores[activeScore].badge_class"
+                                class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-white text-slate-800 border border-slate-300"
                                 x-text="scores[activeScore].label"
                             ></span>
                         </div>
@@ -789,37 +787,37 @@
 
                     <!-- Exemples appliqués aux critères C4, C5, C7, C8 -->
                     <div class="pt-3 border-t border-slate-200/80 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-                        <div class="bg-white p-3 rounded-xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
                             <div>
                                 <div class="flex items-center justify-between mb-1.5">
-                                    <span class="font-black text-slate-800">C4 • Implication</span>
+                                    <span class="font-bold text-slate-900">C4 • Implication</span>
                                 </div>
                                 <p class="text-slate-600 leading-snug" x-text="scores[activeScore].c4"></p>
                             </div>
                         </div>
 
-                        <div class="bg-white p-3 rounded-xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
                             <div>
                                 <div class="flex items-center justify-between mb-1.5">
-                                    <span class="font-black text-slate-800">C5 • Comportement</span>
+                                    <span class="font-bold text-slate-900">C5 • Comportement</span>
                                 </div>
                                 <p class="text-slate-600 leading-snug" x-text="scores[activeScore].c5"></p>
                             </div>
                         </div>
 
-                        <div class="bg-white p-3 rounded-xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
                             <div>
                                 <div class="flex items-center justify-between mb-1.5">
-                                    <span class="font-black text-slate-800">C7 • Progression</span>
+                                    <span class="font-bold text-slate-900">C7 • Progression</span>
                                 </div>
                                 <p class="text-slate-600 leading-snug" x-text="scores[activeScore].c7"></p>
                             </div>
                         </div>
 
-                        <div class="bg-white p-3 rounded-xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
                             <div>
                                 <div class="flex items-center justify-between mb-1.5">
-                                    <span class="font-black text-slate-800">C8 • Hygiène</span>
+                                    <span class="font-bold text-slate-900">C8 • Environnement</span>
                                 </div>
                                 <p class="text-slate-600 leading-snug" x-text="scores[activeScore].c8"></p>
                             </div>

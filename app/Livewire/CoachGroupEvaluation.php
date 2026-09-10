@@ -149,7 +149,7 @@ class CoachGroupEvaluation extends Component
             ->whereDate('start_date', '<=', $today)
             ->whereDate('end_date', '>=', $today)
             ->get()
-            ->sortBy(fn (Evaluation $eval) => $eval->athlete->last_name.' '.$eval->athlete->first_name);
+            ->sortBy(fn (Evaluation $eval) => $eval->athlete->first_name.' '.$eval->athlete->last_name, SORT_NATURAL | SORT_FLAG_CASE);
 
         $hasCollectiveSession = $evaluations->contains(fn (Evaluation $e) => $e->context === EvaluationContext::Collective);
 

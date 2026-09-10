@@ -23,8 +23,8 @@ enum EvaluationContext: string implements HasColor, HasLabel
     public function getLabel(): ?string
     {
         return match ($this) {
-            self::Collective => 'Session générale (S35)',
-            self::Adaptation => 'Période d\'adaptation (Art. 3.4 & 10.2)',
+            self::Collective => 'Période d\'évaluation',
+            self::Adaptation => 'Période d\'adaptation (Art. 3.4 et 10.2)',
             self::EvaluationProbation => 'Sursis probatoire de sélection (Art. 10.5)',
             self::DisciplinaryProbation => 'Sursis disciplinaire (Art. 27.1)',
         };
@@ -37,6 +37,19 @@ enum EvaluationContext: string implements HasColor, HasLabel
             self::Adaptation => 'warning',
             self::EvaluationProbation => 'danger',
             self::DisciplinaryProbation => 'danger',
+        };
+    }
+
+    /**
+     * Libellé court et condensé pour les en-têtes de tableaux et badges.
+     */
+    public function shortLabel(): string
+    {
+        return match ($this) {
+            self::Collective => 'Eval.',
+            self::Adaptation => 'Adapt.',
+            self::EvaluationProbation => 'Eval.',
+            self::DisciplinaryProbation => 'Sursis',
         };
     }
 }
