@@ -93,6 +93,49 @@ enum EvaluationCriterion: string implements HasColor, HasDescription, HasLabel
     }
 
     /**
+     * Libellé d'en-tête de la précision opérationnelle.
+     */
+    public function operationalLabel(): string
+    {
+        return match ($this) {
+            self::C1_Attendance, self::C2_Punctuality, self::C3_Competitions => 'Fonctionnement :',
+            self::C6_Performance => 'Niveaux :',
+            self::C9_Volunteering => 'Engagement :',
+            default => 'Échelle :',
+        };
+    }
+
+    /**
+     * Précision opérationnelle détaillée sur le mode de calcul et les règles spécifiques.
+     */
+    public function operationalDetails(): string
+    {
+        return match ($this) {
+            self::C1_Attendance => 'Calculé selon le rapport entre les présences réelles (NDS J+S) et le nombre d\'entraînements prévus sur la période. Neutralisé si une blessure déclarée empêche la pratique.',
+            self::C2_Punctuality => sprintf(
+                'Note de départ standard de %s / 10 (la ponctualité étant la norme attendue). Chaque retard consigné entraîne une déduction de %s point.',
+                number_format((float) config('evaluation.penalties.retard_base_score', 6.0), 1),
+                number_format((float) config('evaluation.penalties.retard_deduction', 0.3), 1)
+            ),
+            self::C3_Competitions => 'Comparaison entre le nombre de compétitions effectuées et l\'objectif fixé pour le groupe d\'entraînement. Neutralisé en cas de blessure déclarée.',
+            self::C6_Performance => (function () {
+                $levels = array_map(
+                    fn (AthleticLevel $l) => sprintf('%s (%s)', $l->getLabel(), number_format($l->score(), 1)),
+                    AthleticLevel::cases()
+                );
+
+                return implode(', ', $levels).'. Ce critère est un bonus valorisant sans pénalité pour l\'athlète.';
+            })(),
+            self::C9_Volunteering => sprintf(
+                'Concerne les familles des athlètes jusqu\'à %d ans. Notre règlement demande au moins %d aides par an. Les participations bénévoles est important pour la vie du Club.',
+                (int) config('evaluation.defaults.max_volunteering_age', 17),
+                (int) config('evaluation.defaults.required_volunteering_count', 2)
+            ),
+            default => 'Noté de 0 à 10 selon la grille qualitative de (5.0 correspondant au standard attendu).',
+        };
+    }
+
+    /**
      * Nom de la colonne dans le modèle Evaluation où le score (0-10) est stocké.
      */
     public function scoreColumn(): string

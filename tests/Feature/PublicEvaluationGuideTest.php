@@ -1,6 +1,8 @@
 <?php
 
+use App\Enums\EvaluationContext;
 use App\Enums\EvaluationCriterion;
+use App\Enums\EvaluationDecision;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -45,4 +47,22 @@ test('public evaluation guide displays qualitative scale tiers and regulation ar
     $response->assertSee('Art. 9');
     $response->assertSee('Art. 10');
     $response->assertSee('Art. 27');
+});
+
+test('evaluation context and decision enums expose complete regulation and description helpers', function () {
+    foreach (EvaluationContext::cases() as $context) {
+        expect($context->regulationArticle())->not->toBeEmpty()
+            ->and($context->description())->not->toBeEmpty()
+            ->and($context->associatedStatusLabel())->not->toBeEmpty();
+    }
+
+    foreach (EvaluationDecision::cases() as $decision) {
+        expect($decision->description())->not->toBeEmpty()
+            ->and($decision->styleConfig())->toBeArray();
+    }
+
+    foreach (EvaluationCriterion::cases() as $criterion) {
+        expect($criterion->operationalLabel())->not->toBeEmpty()
+            ->and($criterion->operationalDetails())->not->toBeEmpty();
+    }
 });

@@ -107,7 +107,7 @@
 
                 <div class="prose prose-slate max-w-none text-sm text-slate-700 space-y-3 leading-relaxed">
                     <p>
-                        Au <strong>Club Athlétique de Sion</strong>, l'évaluation n'est pas un examen ni un jugement punitif : c'est un <strong>outil d'échange et d'accompagnement</strong>. Elle permet à chaque entraîneur de faire un point complet et objectif sur la progression sportive de l'athlète, son assiduité, son implication et son respect de la vie de groupe.
+                        Au <strong>Club Athlétique de Sion</strong>, l'évaluation n'est pas un examen ni un jugement punitif : c'est un <strong>outil d'échange et d'accompagnement</strong>. Elle permet d'établir un bilan complet et objectif, dont l'entraîneur dispose pour accompagner au plus près la progression et l'épanouissement de l'athlète au sein du groupe.
                     </p>
                     <p>
                         Elle donne à l'athlète et à ses parents une visibilité totale sur ses points forts, ses axes d'amélioration et la confirmation de son intégration dans son groupe d'entraînement, conformément aux <strong>articles 3, 9, 10 et 27 du Règlement du club</strong>.
@@ -126,7 +126,7 @@
                         <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs shrink-0">2</div>
                         <div>
                             <h3 class="text-xs font-bold text-slate-900">Synthèse et barème</h3>
-                            <p class="text-[12px] text-slate-600 mt-0.5">L'entraîneur renseigne la grille selon les critères précis du barème officiel.</p>
+                            <p class="text-[12px] text-slate-600 mt-0.5">Le bilan consolide les données factuelles et les observations de terrain selon la grille officielle du club.</p>
                         </div>
                     </div>
                     <div class="flex items-start gap-3">
@@ -199,37 +199,10 @@
 
                         <!-- Précisions spécifiques par critère -->
                         <div class="mt-3 bg-slate-50 rounded-xl p-3 text-xs text-slate-600 border border-slate-200/70">
-                            @if($criterion === \App\Enums\EvaluationCriterion::C1_Attendance)
-                                <div class="flex items-start gap-2">
-                                    <span class="font-bold text-slate-900 shrink-0">Fonctionnement :</span>
-                                    <span>Calculé selon le rapport entre les présences réelles (NDS J+S) et le nombre d'entraînements prévus sur la période. <strong class="text-slate-800">Neutralisé</strong> si une blessure déclarée empêche la pratique.</span>
-                                </div>
-                            @elseif($criterion === \App\Enums\EvaluationCriterion::C2_Punctuality)
-                                <div class="flex items-start gap-2">
-                                    <span class="font-bold text-slate-900 shrink-0">Fonctionnement :</span>
-                                    <span>Note de départ standard de <strong>6.0 / 10</strong> (la ponctualité étant la norme attendue). Chaque retard non justifié entraîne une déduction de <strong>0.3 point</strong>.</span>
-                                </div>
-                            @elseif($criterion === \App\Enums\EvaluationCriterion::C3_Competitions)
-                                <div class="flex items-start gap-2">
-                                    <span class="font-bold text-slate-900 shrink-0">Fonctionnement :</span>
-                                    <span>Comparaison entre le nombre de compétitions effectuées et l'objectif fixé pour le groupe d'entraînement. <strong class="text-slate-800">Neutralisé</strong> en cas de blessure déclarée.</span>
-                                </div>
-                            @elseif($criterion === \App\Enums\EvaluationCriterion::C6_Performance)
-                                <div class="flex items-start gap-2">
-                                    <span class="font-bold text-slate-900 shrink-0">Barème des niveaux :</span>
-                                    <span>Cantonal (6.0), Régional (7.5), National (9.0), International (10.0). <strong class="text-slate-800">Ce critère est un bonus valorisant</strong> sans pénalité pour l'athlète.</span>
-                                </div>
-                            @elseif($criterion === \App\Enums\EvaluationCriterion::C9_Volunteering)
-                                <div class="flex items-start gap-2">
-                                    <span class="font-bold text-slate-900 shrink-0">Engagement familial :</span>
-                                    <span>Concerne les familles des athlètes jusqu'à <strong>17 ans</strong>. Les participations des parents aux concours et manifestations organisés par le club rapportent des points précieux pour l'athlète.</span>
-                                </div>
-                            @else
-                                <div class="flex items-start gap-2">
-                                    <span class="font-bold text-slate-900 shrink-0">Échelle :</span>
-                                    <span>Noté de 0 à 10 selon la grille qualitative de l'entraîneur (5.0 correspondant au cadre minimal attendu).</span>
-                                </div>
-                            @endif
+                            <div class="flex items-start gap-2">
+                                <span class="font-bold text-slate-900 shrink-0">{{ $criterion->operationalLabel() }}</span>
+                                <span>{{ $criterion->operationalDetails() }}</span>
+                            </div>
                         </div>
                     </div>
                 @endforeach
@@ -273,14 +246,14 @@
                 <!-- Grille détaillée par critères qualitatifs -->
                 <div class="mt-10 pt-8 border-t border-slate-200">
                     <h3 class="text-lg font-bold text-slate-900 mb-2">Descripteurs précis par critère qualitatif</h3>
-                    <p class="text-xs text-slate-500 mb-6">Ce que l'entraîneur observe concrètement lors des séances d'entraînement :</p>
+                    <p class="text-xs text-slate-500 mb-6">Les attitudes, comportements et repères observés sur le terrain lors des séances :</p>
 
                     <div class="space-y-6">
                         <!-- C4 Implication -->
                         <div class="bg-slate-50 rounded-2xl p-4 sm:p-5 border border-slate-200">
                             <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2 mb-3">
                                 <span class="px-2 py-0.5 rounded bg-slate-900 text-white text-xs font-extrabold">C4</span>
-                                <span>Implication et rigueur (15%)</span>
+                                <span>Implication et rigueur ({{ $weights['c4'] ?? 15 }}%)</span>
                             </h4>
                             <div class="grid grid-cols-1 sm:grid-cols-5 gap-2 text-xs">
                                 <div class="p-2.5 rounded-xl bg-red-50/70 border border-red-200 text-red-900">
@@ -310,7 +283,7 @@
                         <div class="bg-slate-50 rounded-2xl p-4 sm:p-5 border border-slate-200">
                             <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2 mb-3">
                                 <span class="px-2 py-0.5 rounded bg-slate-900 text-white text-xs font-extrabold">C5</span>
-                                <span>Comportement et esprit d'équipe (15%) • Règlement Art. 9</span>
+                                <span>Comportement et esprit d'équipe ({{ $weights['c5'] ?? 15 }}%) • Règlement Art. 9</span>
                             </h4>
                             <div class="grid grid-cols-1 sm:grid-cols-5 gap-2 text-xs">
                                 <div class="p-2.5 rounded-xl bg-red-50/70 border border-red-200 text-red-900">
@@ -340,7 +313,7 @@
                         <div class="bg-slate-50 rounded-2xl p-4 sm:p-5 border border-slate-200">
                             <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2 mb-3">
                                 <span class="px-2 py-0.5 rounded bg-slate-900 text-white text-xs font-extrabold">C7</span>
-                                <span>Progression technique et motrice (10%)</span>
+                                <span>Progression technique et motrice ({{ $weights['c7'] ?? 10 }}%)</span>
                             </h4>
                             <div class="grid grid-cols-1 sm:grid-cols-5 gap-2 text-xs">
                                 <div class="p-2.5 rounded-xl bg-red-50/70 border border-red-200 text-red-900">
@@ -370,7 +343,7 @@
                         <div class="bg-slate-50 rounded-2xl p-4 sm:p-5 border border-slate-200">
                             <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2 mb-3">
                                 <span class="px-2 py-0.5 rounded bg-slate-900 text-white text-xs font-extrabold">C8</span>
-                                <span>Hygiène de vie et environnement familial (5%)</span>
+                                <span>Hygiène de vie et environnement familial ({{ $weights['c8'] ?? 5 }}%)</span>
                             </h4>
                             <div class="grid grid-cols-1 sm:grid-cols-5 gap-2 text-xs">
                                 <div class="p-2.5 rounded-xl bg-red-50/70 border border-red-200 text-red-900">
@@ -424,28 +397,14 @@
                             <h3 class="text-base font-bold text-slate-900">{{ $context->getLabel() }}</h3>
 
                             <p class="text-xs text-slate-600 mt-2.5 leading-relaxed">
-                                @if($context === \App\Enums\EvaluationContext::Collective)
-                                    Session semestrielle officielle menée auprès de l'ensemble des athlètes actifs du club dans leurs groupes d'entraînement respectifs.
-                                @elseif($context === \App\Enums\EvaluationContext::Adaptation)
-                                    Période probatoire de 5 semaines pour tout nouvel athlète intégrant le club afin de valider son adéquation avec le groupe, les exigences et l'esprit du club.
-                                @elseif($context === \App\Enums\EvaluationContext::EvaluationProbation)
-                                    Période complémentaire de 2 semaines accordée à un athlète en difficulté pour lui permettre de corriger des fragilités (assiduité, ponctualité, implication) avec le soutien de son entraîneur.
-                                @elseif($context === \App\Enums\EvaluationContext::DisciplinaryProbation)
-                                    Période ciblée de 2 semaines consécutive à un rappel au règlement (Art. 27.1) pour observer le rétablissement d'une attitude irréprochable.
-                                @endif
+                                {{ $context->description() }}
                             </p>
                         </div>
 
                         <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
                             <span>Statut d'athlète associé</span>
                             <span class="font-semibold text-slate-700">
-                                @if($context === \App\Enums\EvaluationContext::Adaptation)
-                                    Adaptation
-                                @elseif($context === \App\Enums\EvaluationContext::Collective)
-                                    Membre actif
-                                @else
-                                    Sursis probatoire
-                                @endif
+                                {{ $context->associatedStatusLabel() }}
                             </span>
                         </div>
                     </div>
@@ -459,94 +418,45 @@
                 <div class="mb-6">
                     <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Conséquences et suites</span>
                     <h2 class="text-2xl font-black text-slate-900">Les décisions possibles</h2>
-                    <p class="text-xs text-slate-500">À l'issue de l'évaluation, l'entraîneur et le Comité statuent selon 3 issues officielles prévues par le règlement.</p>
+                    <p class="text-xs text-slate-500">À l'issue de l'évaluation, la Commission Technique et le Comité statuent collégialement selon 3 issues officielles prévues par le règlement.</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="p-5 rounded-2xl bg-emerald-50/70 border border-emerald-200">
-                        <div class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold mb-3">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-                            </svg>
-                        </div>
-                        <h3 class="text-sm font-bold text-emerald-900">Maintien ou admission</h3>
-                        <div class="text-[11px] font-semibold text-emerald-700 mt-0.5">Règlement Art. 10.4</div>
-                        <p class="text-xs text-emerald-800 mt-2 leading-relaxed">
-                            L'athlète satisfait aux exigences de son groupe. Son statut de membre actif est confirmé et il poursuit sereinement ses entraînements et compétitions.
-                        </p>
-                    </div>
-
-                    <div class="p-5 rounded-2xl bg-amber-50/70 border border-amber-200">
-                        <div class="w-8 h-8 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold mb-3">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-                            </svg>
-                        </div>
-                        <h3 class="text-sm font-bold text-amber-900">Sursis probatoire</h3>
-                        <div class="text-[11px] font-semibold text-amber-700 mt-0.5">Règlement Art. 10.5 (2 semaines)</div>
-                        <p class="text-xs text-amber-800 mt-2 leading-relaxed">
-                            Certains critères demandent une attention immédiate (ex. assiduité, implication). Une période de 2 semaines permet à l'athlète de redresser la barre avec des objectifs précis.
-                        </p>
-                    </div>
-
-                    <div class="p-5 rounded-2xl bg-red-50/70 border border-red-200">
-                        <div class="w-8 h-8 rounded-lg bg-red-600 text-white flex items-center justify-center font-bold mb-3">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                            </svg>
-                        </div>
-                        <h3 class="text-sm font-bold text-red-900">Non-admission ou réorientation</h3>
-                        <div class="text-[11px] font-semibold text-red-700 mt-0.5">Règlement Art. 10.5 et 27</div>
-                        <p class="text-xs text-red-800 mt-2 leading-relaxed">
-                            Si les critères ne sont pas atteints après le sursis, une réorientation vers un autre groupe plus adapté ou une décision collégiale du Comité est prononcée.
-                        </p>
-                    </div>
+                    @foreach($decisions as $decision)
+                        @if($decision !== \App\Enums\EvaluationDecision::Pending)
+                            @php $style = $decision->styleConfig(); @endphp
+                            <div class="p-5 rounded-2xl {{ $style['card_bg'] }} border {{ $style['card_border'] }}">
+                                <div class="w-8 h-8 rounded-lg {{ $style['icon_bg'] }} {{ $style['icon_color'] }} flex items-center justify-center font-bold mb-3">
+                                    @if($style['icon'] === 'check')
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                        </svg>
+                                    @elseif($style['icon'] === 'exclamation')
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+                                        </svg>
+                                    @else
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                        </svg>
+                                    @endif
+                                </div>
+                                <h3 class="text-sm font-bold {{ $style['text_title'] }}">{{ $decision->getLabel() }}</h3>
+                                @if($decision->regulationArticle())
+                                    <div class="text-[11px] font-semibold {{ $style['text_article'] }} mt-0.5">{{ $decision->regulationArticle() }}</div>
+                                @endif
+                                <p class="text-xs {{ $style['text_desc'] }} mt-2 leading-relaxed">
+                                    {{ $decision->description() }}
+                                </p>
+                            </div>
+                        @endif
+                    @endforeach
                 </div>
             </div>
         </section>
 
         <!-- Section Simulateur Interactif Alpine.js -->
-        <section id="simulateur" class="max-w-5xl mx-auto px-4 sm:px-6 py-12" x-data="{
-            c1: 10,
-            c2_retards: 0,
-            c3: 10,
-            c4: 6,
-            c5: 6,
-            c6_level: 6.0,
-            c7: 6,
-            c8: 6,
-            c9_volunteering: 2,
-            get c2Score() {
-                return Math.max(0, 6.0 - (Number(this.c2_retards) * 0.3));
-            },
-            get c9Score() {
-                const req = 2;
-                const count = Number(this.c9_volunteering);
-                return Math.min(10.0, Math.max(0.0, 2.0 + (count * (4.0 / req))));
-            },
-            get totalScore() {
-                const total = (Number(this.c1) * 0.20) +
-                              (Number(this.c2Score) * 0.05) +
-                              (Number(this.c3) * 0.15) +
-                              (Number(this.c4) * 0.15) +
-                              (Number(this.c5) * 0.15) +
-                              (Number(this.c6_level) * 0.10) +
-                              (Number(this.c7) * 0.10) +
-                              (Number(this.c8) * 0.05) +
-                              (Number(this.c9Score) * 0.05);
-                return Math.round(total * 10) / 10;
-            },
-            get decisionText() {
-                if (this.totalScore >= 5.0) return 'Maintien ou admission confirmé(e) (Art. 10.4)';
-                if (this.totalScore >= 4.0) return 'Sursis probatoire recommandé (Art. 10.5)';
-                return 'Non-admission ou arbitrage Comité (Art. 10.5)';
-            },
-            get decisionBadge() {
-                if (this.totalScore >= 5.0) return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-                if (this.totalScore >= 4.0) return 'bg-amber-100 text-amber-800 border-amber-200';
-                return 'bg-red-100 text-red-800 border-red-200';
-            }
-        }">
+        <section id="simulateur" class="max-w-5xl mx-auto px-4 sm:px-6 py-12" x-data="evaluationSimulator(@js($simulatorConfig))">
             <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-700">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-700">
                     <div>
@@ -575,7 +485,7 @@
                         <!-- C1 Assiduité -->
                         <div class="bg-slate-800/60 rounded-xl p-3.5 border border-slate-700/80">
                             <div class="flex justify-between text-xs mb-1.5 font-semibold">
-                                <span>C1 • Assiduité aux séances (20%)</span>
+                                <span>C1 • Assiduité aux séances ({{ $weights['c1'] ?? 20 }}%)</span>
                                 <span class="text-red-400 font-bold" x-text="c1 + ' / 10'"></span>
                             </div>
                             <input type="range" min="0" max="10" step="1" x-model.number="c1" class="w-full accent-red-500 cursor-pointer">
@@ -589,21 +499,21 @@
                         <!-- C2 Ponctualité -->
                         <div class="bg-slate-800/60 rounded-xl p-3.5 border border-slate-700/80">
                             <div class="flex justify-between text-xs mb-1.5 font-semibold">
-                                <span>C2 • Retards constatés (5%)</span>
+                                <span>C2 • Retards constatés ({{ $weights['c2'] ?? 5 }}%)</span>
                                 <span class="text-red-400 font-bold" x-text="c2Score.toFixed(1) + ' / 10 (' + c2_retards + ' retard' + (c2_retards > 1 ? 's' : '') + ')'"></span>
                             </div>
                             <input type="range" min="0" max="10" step="1" x-model.number="c2_retards" class="w-full accent-red-500 cursor-pointer">
                             <div class="flex justify-between text-[10px] text-slate-400 mt-1">
-                                <span>0 retard (6.0)</span>
-                                <span>-0.3 pt par retard</span>
-                                <span>10 retards (3.0)</span>
+                                <span>0 retard ({{ number_format(config('evaluation.penalties.retard_base_score', 6.0), 1) }})</span>
+                                <span>-{{ number_format(config('evaluation.penalties.retard_deduction', 0.3), 1) }} pt / retard</span>
+                                <span>10 retards ({{ number_format(max(0, config('evaluation.penalties.retard_base_score', 6.0) - 10 * config('evaluation.penalties.retard_deduction', 0.3)), 1) }})</span>
                             </div>
                         </div>
 
                         <!-- C3 Compétitions -->
                         <div class="bg-slate-800/60 rounded-xl p-3.5 border border-slate-700/80">
                             <div class="flex justify-between text-xs mb-1.5 font-semibold">
-                                <span>C3 • Compétitions réalisées (15%)</span>
+                                <span>C3 • Compétitions réalisées ({{ $weights['c3'] ?? 15 }}%)</span>
                                 <span class="text-red-400 font-bold" x-text="c3 + ' / 10'"></span>
                             </div>
                             <input type="range" min="0" max="10" step="1" x-model.number="c3" class="w-full accent-red-500 cursor-pointer">
@@ -617,27 +527,26 @@
                         <!-- C6 Niveau -->
                         <div class="bg-slate-800/60 rounded-xl p-3.5 border border-slate-700/80">
                             <div class="flex justify-between text-xs mb-1.5 font-semibold">
-                                <span>C6 • Niveau athlétique (10% bonus)</span>
+                                <span>C6 • Niveau athlétique ({{ $weights['c6'] ?? 10 }}% bonus)</span>
                                 <span class="text-red-400 font-bold" x-text="c6_level + ' / 10'"></span>
                             </div>
-                            <div class="grid grid-cols-4 gap-1.5 mt-2">
-                                <button type="button" @click="c6_level = 5.5" :class="c6_level === 5.5 ? 'bg-red-600 text-white font-bold' : 'bg-slate-700 text-slate-300'" class="py-1 rounded-lg text-xs transition">Cantonal (5.5)</button>
-                                <button type="button" @click="c6_level = 6.0" :class="c6_level === 6.0 ? 'bg-red-600 text-white font-bold' : 'bg-slate-700 text-slate-300'" class="py-1 rounded-lg text-xs transition">Régional (6.0)</button>
-                                <button type="button" @click="c6_level = 7.0" :class="c6_level === 7.0 ? 'bg-red-600 text-white font-bold' : 'bg-slate-700 text-slate-300'" class="py-1 rounded-lg text-xs transition">National (7.0)</button>
-                                <button type="button" @click="c6_level = 9.0" :class="c6_level === 9.0 ? 'bg-red-600 text-white font-bold' : 'bg-slate-700 text-slate-300'" class="py-1 rounded-lg text-xs transition">Inter. (9.0)</button>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 mt-2">
+                                @foreach($levels as $level)
+                                    <button type="button" @click="c6_level = {{ $level->score() }}" :class="c6_level === {{ $level->score() }} ? 'bg-red-600 text-white font-bold' : 'bg-slate-700 text-slate-300'" class="py-1 rounded-lg text-xs transition">{{ $level->getLabel() }} ({{ number_format($level->score(), 1) }})</button>
+                                @endforeach
                             </div>
                         </div>
 
                         <!-- C9 Bénévolat -->
                         <div class="bg-slate-800/60 rounded-xl p-3.5 border border-slate-700/80">
                             <div class="flex justify-between text-xs mb-1.5 font-semibold">
-                                <span>C9 • Bénévolat familial (5%)</span>
+                                <span>C9 • Bénévolat familial ({{ $weights['c9'] ?? 5 }}%)</span>
                                 <span class="text-red-400 font-bold" x-text="c9Score.toFixed(1) + ' / 10 (' + c9_volunteering + ' aide' + (c9_volunteering > 1 ? 's' : '') + ')'"></span>
                             </div>
                             <input type="range" min="0" max="4" step="1" x-model.number="c9_volunteering" class="w-full accent-red-500 cursor-pointer">
                             <div class="flex justify-between text-[10px] text-slate-400 mt-1">
                                 <span>0 (note 2.0)</span>
-                                <span>2 (requis, note 6.0)</span>
+                                <span>{{ config('evaluation.defaults.required_volunteering_count', 2) }} (requis, note 6.0)</span>
                                 <span>4 (note 10.0)</span>
                             </div>
                         </div>
@@ -645,12 +554,12 @@
 
                     <!-- Colonne 2 : Critères qualitatifs -->
                     <div class="space-y-4">
-                        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Critères qualitatifs de l'entraîneur</h3>
+                        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Critères d'engagement et de progression</h3>
 
                         <!-- C4 Implication -->
                         <div class="bg-slate-800/60 rounded-xl p-3.5 border border-slate-700/80">
                             <div class="flex justify-between text-xs mb-1.5 font-semibold">
-                                <span>C4 • Implication et rigueur (15%)</span>
+                                <span>C4 • Implication et rigueur ({{ $weights['c4'] ?? 15 }}%)</span>
                                 <span class="text-red-400 font-bold" x-text="c4 + ' / 10'"></span>
                             </div>
                             <input type="range" min="0" max="10" step="1" x-model.number="c4" class="w-full accent-red-500 cursor-pointer">
@@ -664,7 +573,7 @@
                         <!-- C5 Comportement -->
                         <div class="bg-slate-800/60 rounded-xl p-3.5 border border-slate-700/80">
                             <div class="flex justify-between text-xs mb-1.5 font-semibold">
-                                <span>C5 • Comportement et esprit d'équipe (15%)</span>
+                                <span>C5 • Comportement et esprit d'équipe ({{ $weights['c5'] ?? 15 }}%)</span>
                                 <span class="text-red-400 font-bold" x-text="c5 + ' / 10'"></span>
                             </div>
                             <input type="range" min="0" max="10" step="1" x-model.number="c5" class="w-full accent-red-500 cursor-pointer">
@@ -678,7 +587,7 @@
                         <!-- C7 Progression -->
                         <div class="bg-slate-800/60 rounded-xl p-3.5 border border-slate-700/80">
                             <div class="flex justify-between text-xs mb-1.5 font-semibold">
-                                <span>C7 • Progression motrice (10%)</span>
+                                <span>C7 • Progression motrice ({{ $weights['c7'] ?? 10 }}%)</span>
                                 <span class="text-red-400 font-bold" x-text="c7 + ' / 10'"></span>
                             </div>
                             <input type="range" min="0" max="10" step="1" x-model.number="c7" class="w-full accent-red-500 cursor-pointer">
@@ -692,7 +601,7 @@
                         <!-- C8 Environnement -->
                         <div class="bg-slate-800/60 rounded-xl p-3.5 border border-slate-700/80">
                             <div class="flex justify-between text-xs mb-1.5 font-semibold">
-                                <span>C8 • Hygiène de vie et environnement (5%)</span>
+                                <span>C8 • Hygiène de vie et environnement ({{ $weights['c8'] ?? 5 }}%)</span>
                                 <span class="text-red-400 font-bold" x-text="c8 + ' / 10'"></span>
                             </div>
                             <input type="range" min="0" max="10" step="1" x-model.number="c8" class="w-full accent-red-500 cursor-pointer">
@@ -724,7 +633,7 @@
                             </svg>
                         </button>
                         <div x-show="openFaq === 1" x-collapse class="text-xs text-slate-600 mt-3 pt-3 border-t border-slate-200/60 leading-relaxed">
-                            Lorsqu'une blessure est signalée et constatée par l'entraîneur, les critères d'assiduité (C1) et de compétitions (C3) sont automatiquement <strong>neutralisés</strong>. La note moyenne globale est recalculée sur la base des autres critères sans pénaliser l'athlète.
+                            Lorsqu'une blessure est signalée et enregistrée auprès du club, les critères d'assiduité (C1) et de compétitions (C3) sont automatiquement <strong>neutralisés</strong>. La note moyenne globale est recalculée sur la base des autres critères sans pénaliser l'athlète.
                         </div>
                     </div>
 
@@ -736,7 +645,7 @@
                             </svg>
                         </button>
                         <div x-show="openFaq === 2" x-collapse class="text-xs text-slate-600 mt-3 pt-3 border-t border-slate-200/60 leading-relaxed">
-                            À l'issue de la session, un <strong>Bilan individuel d'évaluation (document PDF officiel)</strong> est généré pour chaque athlète. En cas de sursis probatoire ou sur demande des parents et de l'athlète, un échange avec l'entraîneur est organisé pour faire le point et fixer des objectifs de progression.
+                            À l'issue de la session, un <strong>Bilan individuel d'évaluation (document PDF officiel)</strong> est généré pour chaque athlète. En cas de sursis probatoire ou sur demande des parents et de l'athlète, un échange constructif est proposé avec l'entraîneur pour définir ensemble les axes de travail.
                         </div>
                     </div>
 
@@ -748,7 +657,7 @@
                             </svg>
                         </button>
                         <div x-show="openFaq === 3" x-collapse class="text-xs text-slate-600 mt-3 pt-3 border-t border-slate-200/60 leading-relaxed">
-                            Le CA Sion est une association sportive animée par des bénévoles passionnés. L'organisation des concours d'athlétisme repose sur l'aide des familles. Pour les athlètes jusqu'à 17 ans, l'implication des parents (2 aides par an demandées) est un critère valorisé à hauteur de 5% dans l'évaluation.
+                            Le CA Sion est une association sportive animée par des bénévoles passionnés. L'organisation des concours d'athlétisme repose sur l'aide des familles. Pour les athlètes jusqu'à <strong>{{ config('evaluation.defaults.max_volunteering_age', 17) }} ans</strong>, l'implication des parents (<strong>{{ config('evaluation.defaults.required_volunteering_count', 2) }} aides par an</strong> demandées) est un critère valorisé à hauteur de {{ $weights['c9'] ?? 5 }}% dans l'évaluation.
                         </div>
                     </div>
                 </div>
@@ -764,6 +673,61 @@
             <p>Outil d'évaluation • Règlement art. 3, 9, 10 et 27</p>
         </div>
     </footer>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('evaluationSimulator', (cfg) => ({
+                config: cfg,
+                c1: 10,
+                c2_retards: 0,
+                c3: 10,
+                c4: 6,
+                c5: 6,
+                c6_level: (cfg.levels && cfg.levels.length > 1) ? cfg.levels[1].score : 6.0,
+                c7: 6,
+                c8: 6,
+                c9_volunteering: (cfg.defaults && cfg.defaults.required_volunteering_count) || 2,
+
+                get c2Score() {
+                    const base = Number(this.config.penalties?.retard_base_score ?? 6.0);
+                    const ded = Number(this.config.penalties?.retard_deduction ?? 0.3);
+                    return Math.max(0, base - (Number(this.c2_retards) * ded));
+                },
+
+                get c9Score() {
+                    const req = Number(this.config.defaults?.required_volunteering_count ?? 2);
+                    const count = Number(this.c9_volunteering);
+                    return Math.min(10.0, Math.max(0.0, 2.0 + (count * (4.0 / req))));
+                },
+
+                get totalScore() {
+                    const w = this.config.weights || {};
+                    const total = (Number(this.c1) * (w.c1 ?? 0.20)) +
+                                  (Number(this.c2Score) * (w.c2 ?? 0.05)) +
+                                  (Number(this.c3) * (w.c3 ?? 0.15)) +
+                                  (Number(this.c4) * (w.c4 ?? 0.15)) +
+                                  (Number(this.c5) * (w.c5 ?? 0.15)) +
+                                  (Number(this.c6_level) * (w.c6 ?? 0.10)) +
+                                  (Number(this.c7) * (w.c7 ?? 0.10)) +
+                                  (Number(this.c8) * (w.c8 ?? 0.05)) +
+                                  (Number(this.c9Score) * (w.c9 ?? 0.05));
+                    return Math.round(total * 10) / 10;
+                },
+
+                get decisionText() {
+                    if (this.totalScore >= (this.config.minScore ?? 5.0)) return 'Maintien ou admission confirmé(e) (Art. 10.4)';
+                    if (this.totalScore >= 4.0) return 'Sursis probatoire recommandé (Art. 10.5)';
+                    return 'Non-admission ou arbitrage Comité (Art. 10.5)';
+                },
+
+                get decisionBadge() {
+                    if (this.totalScore >= (this.config.minScore ?? 5.0)) return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+                    if (this.totalScore >= 4.0) return 'bg-amber-100 text-amber-800 border-amber-200';
+                    return 'bg-red-100 text-red-800 border-red-200';
+                }
+            }));
+        });
+    </script>
 
     @livewireScripts
 </body>

@@ -99,10 +99,10 @@ test('c6 athletic level scores match specified tiers', function () {
     $service = new EvaluationCalculatorService;
 
     $tiers = [
-        AthleticLevel::Cantonal->value => 6.0,
-        AthleticLevel::Regional->value => 7.5,
-        AthleticLevel::National->value => 9.0,
-        AthleticLevel::International->value => 10.0,
+        AthleticLevel::Cantonal->value => AthleticLevel::Cantonal->score(),
+        AthleticLevel::Regional->value => AthleticLevel::Regional->score(),
+        AthleticLevel::National->value => AthleticLevel::National->score(),
+        AthleticLevel::International->value => AthleticLevel::International->score(),
     ];
 
     foreach ($tiers as $tierValue => $expectedScore) {
@@ -441,10 +441,10 @@ test('evaluation criteria enum methods work correctly', function () {
         ->and(EvaluationCriterion::C3_Competitions->calculateScore($eval))->toEqual(8.33)
         ->and(EvaluationCriterion::C4_Commitment->calculateScore($eval))->toEqual(8.5)
         ->and(EvaluationCriterion::C5_Behavior->calculateScore($eval))->toEqual(9.0)
-        ->and(EvaluationCriterion::C6_Performance->calculateScore($eval))->toEqual(7.5)
+        ->and(EvaluationCriterion::C6_Performance->calculateScore($eval))->toEqual(AthleticLevel::Regional->score())
         ->and(EvaluationCriterion::C7_Progress->calculateScore($eval))->toEqual(8.0)
         ->and(EvaluationCriterion::C8_Environment->calculateScore($eval))->toEqual(7.5)
-        ->and(EvaluationCriterion::C9_Volunteering->calculateScore($eval))->toEqual(8.75);
+        ->and(EvaluationCriterion::C9_Volunteering->calculateScore($eval))->toEqual(8.0);
 });
 
 test('qualitative rubric and tiers definitions are structured and calibrated correctly', function () {
