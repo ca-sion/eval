@@ -99,7 +99,7 @@ test('outside collective session only athletes in active cycle are shown', funct
 
     Livewire::test(CoachGroupEvaluation::class, ['group' => $group])
         ->assertSee('Samy Nouveau')
-        ->assertSee('Adaptation')
+        ->assertSee('adaptation')
         ->assertDontSee('Alex Ancien');
 });
 
