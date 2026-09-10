@@ -103,11 +103,11 @@ class ExcelExportService
                 EvaluationCriterion::C7_Progress->shortLabel().' ('.EvaluationCriterion::C7_Progress->code().')',
                 EvaluationCriterion::C8_Environment->shortLabel().' ('.EvaluationCriterion::C8_Environment->code().')',
                 EvaluationCriterion::C9_Volunteering->shortLabel().' ('.EvaluationCriterion::C9_Volunteering->code().')',
-                'Moyenne Base',
-                'Bonus Club',
-                'Note Finale',
+                'Moyenne base',
+                'Bonus engagement',
+                'Note finale',
                 'Décision',
-                'Notes Entraîneur',
+                'Notes entraîneur',
             ]));
 
             foreach ($evals as $eval) {
@@ -129,7 +129,7 @@ class ExcelExportService
                     $eval->c8_environment !== null ? number_format($eval->c8_environment, 1) : '-',
                     $eval->c9_score !== null ? number_format($eval->c9_score, 2) : '-',
                     $eval->base_average !== null ? number_format($eval->base_average, 2) : '-',
-                    $eval->has_club_engagement ? '+0.75' : '0.00',
+                    $eval->has_club_engagement ? (float) config('evaluation.bonuses.club_engagement') : '0.00',
                     $eval->final_score !== null ? number_format($eval->final_score, 2) : '-',
                     $eval->decision->getLabel(),
                     $eval->coach_notes ?? '',

@@ -223,7 +223,7 @@
         </x-slot>
 
         <x-slot name="description">
-            Calcule les moyennes pondérées, applique les bonus club (+0.75) et établit le classement et les décisions par groupe (Quotas / Note minimale).
+            Calcule les moyennes pondérées, applique les bonus et établit le classement et les décisions par groupe.
         </x-slot>
 
         <x-slot name="afterHeader">

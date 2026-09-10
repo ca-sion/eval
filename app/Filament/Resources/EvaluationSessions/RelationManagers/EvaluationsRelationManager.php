@@ -334,7 +334,7 @@ class EvaluationsRelationManager extends RelationManager
 
                     ToggleColumn::make('has_club_engagement')
                         ->label('Engagement club')
-                        ->tooltip('Bonus club : +0.75 pt accordé pour engagement actif au club')
+                        ->tooltip('Points supplémentaires accordés pour un engagement actif au club')
                         ->alignCenter()
                         ->afterStateUpdated(function (Evaluation $record): void {
                             app(EvaluationCalculatorService::class)->calculateAthlete($record);
@@ -342,7 +342,7 @@ class EvaluationsRelationManager extends RelationManager
 
                     TextColumn::make('final_score')
                         ->label('Note')
-                        ->tooltip('Note finale sur 10 (moyenne pondérée + bonus club)')
+                        ->tooltip('Note finale sur 10 (moyenne pondérée + bonus engagement)')
                         ->alignCenter()
                         ->badge()
                         ->color(fn ($state, Evaluation $record) => $state !== null && (float) $state >= (float) ($record->group?->min_score ?? 6.5) ? 'success' : 'danger')
@@ -531,7 +531,7 @@ class EvaluationsRelationManager extends RelationManager
                         }),
 
                     BulkAction::make('toggle_club_bonus')
-                        ->label('Attribuer le bonus club (+0.75 pt)')
+                        ->label('Attribuer bonus engagement')
                         ->icon(Heroicon::OutlinedHeart)
                         ->action(function (Collection $records): void {
                             $calculator = app(EvaluationCalculatorService::class);
@@ -541,7 +541,7 @@ class EvaluationsRelationManager extends RelationManager
                                 $calculator->calculateAthlete($record);
                             }
 
-                            Notification::make()->title('Bonus club attribué aux athlètes sélectionnés')->success()->send();
+                            Notification::make()->title('Bonus engagement attribué aux athlètes sélectionnés')->success()->send();
                         }),
 
                     DeleteBulkAction::make(),

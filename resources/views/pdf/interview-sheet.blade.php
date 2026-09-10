@@ -196,7 +196,7 @@
             <tr>
                 <td style="width: 50%;">
                     <div><strong>Moyenne pondérée :</strong> {{ $evaluation->base_average !== null ? number_format($evaluation->base_average, 2) . ' / 10' : '-' }}</div>
-                    <div><strong>Bonus engagement club :</strong> {{ $evaluation->has_club_engagement ? '+0.75 pt' : '0.00 pt' }}</div>
+                    <div><strong>Bonus engagement club :</strong> {{ $evaluation->has_club_engagement ? '+'.config('evaluation.bonuses.club_engagement').' pt' : '0.00 pt' }}</div>
                     @if($evaluation->rank !== null)
                         <div><strong>Rang dans le groupe :</strong> {{ $evaluation->rank }} / {{ $evaluation->group->athletes()->count() }}</div>
                     @endif
