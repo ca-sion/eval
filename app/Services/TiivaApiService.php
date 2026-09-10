@@ -273,9 +273,10 @@ class TiivaApiService
                         ? AthleteStatus::Inactive
                         : AthleteStatus::Active;
 
-                    // Un athlète est en période d'adaptation s'il a rejoint le club très récemment (< 3 mois).
+                    // Un athlète est en période d'adaptation s'il a rejoint le club très récemment.
                     // Sinon, c'est un membre actif établi du club.
-                    $isRecentEntry = $entryDate ? $entryDate->isAfter(now()->subMonths(3)) : false;
+                    $recentEntryMonths = (int) config('evaluation.adaptation.recent_entry_months', 3);
+                    $isRecentEntry = $entryDate ? $entryDate->isAfter(now()->subMonths($recentEntryMonths)) : false;
                     $initialStatus = ($status === AthleteStatus::Inactive)
                         ? AthleteStatus::Inactive
                         : ($isRecentEntry ? AthleteStatus::Adaptation : AthleteStatus::Active);
@@ -383,7 +384,11 @@ class TiivaApiService
             if ($session) {
                 $session->update(['last_tiiva_synced_at' => now()]);
 
-                $athletesToEvaluate = Athlete::whereIn('status', [AthleteStatus::Active, AthleteStatus::Adaptation])->with('group')->get();
+                $athletesQuery = Athlete::whereIn('status', [AthleteStatus::Active, AthleteStatus::Adaptation])->with('group');
+                if ($session->groups()->exists()) {
+                    $athletesQuery->whereIn('group_id', $session->groups()->pluck('groups.id'));
+                }
+                $athletesToEvaluate = $athletesQuery->get();
 
                 foreach ($athletesToEvaluate as $athlete) {
                     $existing = Evaluation::where('evaluation_session_id', $session->id)

@@ -150,7 +150,12 @@ class EvaluationCalculatorService
     public function getSessionProgressStats(EvaluationSession $session): array
     {
         $evaluations = $session->evaluations()->with(['athlete', 'group'])->get();
-        $totalActiveAthletes = Athlete::where('status', AthleteStatus::Active)->count();
+
+        $activeAthletesQuery = Athlete::where('status', AthleteStatus::Active);
+        if ($session->groups()->exists()) {
+            $activeAthletesQuery->whereIn('group_id', $session->groups()->pluck('groups.id'));
+        }
+        $totalActiveAthletes = $activeAthletesQuery->count();
         $totalEvaluations = $evaluations->count();
 
         // 1. Métriques de saisie entraîneur (C4, C5, C6, C7, C8)
@@ -200,10 +205,14 @@ class EvaluationCalculatorService
         $pendingCount = $totalEvaluations - ($retainedCount + $probationCount + $notRetainedCount);
 
         // 4. Statistiques par groupe
-        $groups = Group::whereHas('evaluations', fn ($q) => $q->where('evaluation_session_id', $session->id))
-            ->orWhereHas('athletes', fn ($q) => $q->where('status', AthleteStatus::Active))
-            ->distinct()
-            ->get();
+        if ($session->groups()->exists()) {
+            $groups = $session->groups()->get();
+        } else {
+            $groups = Group::whereHas('evaluations', fn ($q) => $q->where('evaluation_session_id', $session->id))
+                ->orWhereHas('athletes', fn ($q) => $q->where('status', AthleteStatus::Active))
+                ->distinct()
+                ->get();
+        }
 
         $groupStats = [];
         foreach ($groups as $group) {
@@ -225,7 +234,7 @@ class EvaluationCalculatorService
                 'probation_count' => $groupEvals->where('decision', EvaluationDecision::ProbationNeeded)->count(),
                 'not_retained_count' => $groupEvals->where('decision', EvaluationDecision::NotRetained)->count(),
                 'mobile_url' => $group->getMobileUrl(),
-                'whatsapp_url' => $group->getWhatsAppShareUrl(),
+                'whatsapp_url' => $group->getWhatsAppShareUrl($session),
             ];
         }
 

@@ -22,7 +22,13 @@
         </x-slot>
 
         <x-slot name="description">
-            Du <strong>{{ $session->start_date ? \Carbon\Carbon::parse($session->start_date)->format('d/m/Y') : '-' }}</strong> au <strong>{{ $session->end_date ? \Carbon\Carbon::parse($session->end_date)->format('d/m/Y') : '-' }}</strong> ({{ $session->weeks_count }} semaines)
+            <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 4px; font-size: 0.875rem;">
+                <span>Période observée : <strong>{{ $session->start_date ? \Carbon\Carbon::parse($session->start_date)->format('d.m.Y') : '-' }}</strong> au <strong>{{ $session->end_date ? \Carbon\Carbon::parse($session->end_date)->format('d.m.Y') : '-' }}</strong> ({{ $session->weeks_count }} semaines)</span>
+                <span>•</span>
+                <span>Date limite de transmission : <strong>{{ $session->effectiveSubmissionDeadline() ? $session->effectiveSubmissionDeadline()->format('d.m.Y') : '-' }}</strong></span>
+                <span>•</span>
+                <span>Groupes : <strong>{{ $session->groups()->exists() ? $session->groups->pluck('name')->join(', ') : 'Tous les groupes' }}</strong></span>
+            </div>
         </x-slot>
 
         <x-slot name="afterHeader">

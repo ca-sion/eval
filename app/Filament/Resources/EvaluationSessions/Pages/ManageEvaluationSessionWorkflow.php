@@ -17,6 +17,7 @@ use App\Services\TiivaApiService;
 use App\Services\TiivaImportService;
 use App\Services\VolunteerImportService;
 use Filament\Actions\Action;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
@@ -155,7 +156,11 @@ class ManageEvaluationSessionWorkflow extends Page
             ->modalDescription('Une fiche d\'évaluation collective sera créée pour chaque athlète actif dans son groupe d\'entraînement actuel.')
             ->action(function (): void {
                 $session = $this->record;
-                $athletes = Athlete::whereIn('status', [AthleteStatus::Active, AthleteStatus::Adaptation])->with('group')->get();
+                $athletesQuery = Athlete::whereIn('status', [AthleteStatus::Active, AthleteStatus::Adaptation])->with('group');
+                if ($session->groups()->exists()) {
+                    $athletesQuery->whereIn('group_id', $session->groups()->pluck('groups.id'));
+                }
+                $athletes = $athletesQuery->get();
                 $createdCount = 0;
                 $updatedCount = 0;
 
@@ -418,25 +423,39 @@ class ManageEvaluationSessionWorkflow extends Page
                 'title' => $this->record->title,
                 'start_date' => $this->record->start_date,
                 'end_date' => $this->record->end_date,
+                'submission_deadline' => $this->record->submission_deadline,
                 'weeks_count' => $this->record->weeks_count,
+                'groups' => $this->record->groups()->pluck('groups.id')->toArray(),
             ])
             ->form([
                 TextInput::make('title')
                     ->label('Intitulé de la session')
                     ->required(),
                 DatePicker::make('start_date')
-                    ->label('Date de début')
+                    ->label('Date de début de période')
                     ->required(),
                 DatePicker::make('end_date')
-                    ->label('Date de fin (échéance)')
+                    ->label('Date de fin de période')
                     ->required(),
+                DatePicker::make('submission_deadline')
+                    ->label('Date limite de rendu pour les entraîneurs')
+                    ->helperText('Date limite accordée aux entraîneurs pour transmettre leurs évaluations (si vide, la date de fin sera appliquée)'),
                 TextInput::make('weeks_count')
-                    ->label('Durée (semaines)')
+                    ->label('Durée (nombre de semaines)')
                     ->numeric()
                     ->required(),
+                CheckboxList::make('groups')
+                    ->relationship('groups', 'name')
+                    ->label('Groupes concernés')
+                    ->helperText('Sélectionner les groupes ciblés. Laisser vide pour inclure tous les groupes.')
+                    ->bulkToggleable()
+                    ->columns(2),
             ])
             ->action(function (array $data): void {
+                $groups = $data['groups'] ?? [];
+                unset($data['groups']);
                 $this->record->update($data);
+                $this->record->groups()->sync($groups);
 
                 Notification::make()
                     ->title('Paramètres de la session mis à jour')

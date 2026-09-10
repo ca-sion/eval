@@ -15,8 +15,10 @@ enum EvaluationContext: string implements HasColor, HasLabel
     public function defaultWeeks(): int
     {
         return match ($this) {
-            self::Collective, self::Adaptation => 5,
-            self::EvaluationProbation, self::DisciplinaryProbation => 2,
+            self::Collective => (int) config('evaluation.durations.collective_session_weeks', 5),
+            self::Adaptation => (int) config('evaluation.durations.adaptation_weeks', 5),
+            self::EvaluationProbation => (int) config('evaluation.durations.evaluation_probation_weeks', 2),
+            self::DisciplinaryProbation => (int) config('evaluation.durations.disciplinary_probation_weeks', 2),
         };
     }
 

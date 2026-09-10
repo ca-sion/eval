@@ -314,3 +314,101 @@ test('nds import service parses complex official J+S multi-column worksheet and 
     // Only 2 attendances within 2026-09-01 and 2026-09-30
     expect($eval->real_attendances)->toBe(2);
 });
+
+test('tiiva api service syncAll respects session targeted groups', function () {
+    config()->set('services.tiiva.api_url', 'https://tiiva.test/api');
+    config()->set('services.tiiva.api_token', 'fake-token');
+
+    Http::fake([
+        'https://tiiva.test/api/v1/contact-groups*' => Http::response([
+            'data' => [
+                [
+                    'id' => '101',
+                    'attributes' => [
+                        'name' => 'Sprint U18',
+                        'color' => '#3b82f6',
+                        'order' => 1,
+                        'is_training_group' => true,
+                    ],
+                ],
+                [
+                    'id' => '102',
+                    'attributes' => [
+                        'name' => 'Demi-Fond U16',
+                        'color' => '#10b981',
+                        'order' => 2,
+                        'is_training_group' => true,
+                    ],
+                ],
+            ],
+            'links' => ['next' => null],
+        ], 200),
+        'https://tiiva.test/api/v1/contacts*filter%5Bgroup_id%5D=101*' => Http::response([
+            'data' => [
+                [
+                    'id' => '501',
+                    'attributes' => [
+                        'first_name' => 'Lucas',
+                        'last_name' => 'Favre',
+                        'birthday' => '2010-04-15',
+                        'gender' => 'M',
+                        'email' => 'lucas@favre.ch',
+                        'phone' => '+41 79 111 22 33',
+                        'is_active' => true,
+                    ],
+                    'relationships' => [
+                        'groups' => ['data' => [['id' => '101', 'type' => 'contact-groups']]],
+                        'guardians' => ['data' => []],
+                    ],
+                ],
+            ],
+            'links' => ['next' => null],
+        ], 200),
+        'https://tiiva.test/api/v1/contacts*filter%5Bgroup_id%5D=102*' => Http::response([
+            'data' => [
+                [
+                    'id' => '502',
+                    'attributes' => [
+                        'first_name' => 'Emma',
+                        'last_name' => 'Bonvin',
+                        'birthday' => '2011-08-20',
+                        'gender' => 'F',
+                        'email' => 'emma@bonvin.ch',
+                        'phone' => '+41 79 444 55 66',
+                        'is_active' => true,
+                    ],
+                    'relationships' => [
+                        'groups' => ['data' => [['id' => '102', 'type' => 'contact-groups']]],
+                        'guardians' => ['data' => []],
+                    ],
+                ],
+            ],
+            'links' => ['next' => null],
+        ], 200),
+    ]);
+
+    // Create a group and session targeting only Sprint U18
+    $service = new TiivaApiService;
+    $sprintGroup = Group::create([
+        'name' => 'Sprint U18',
+        'tiiva_id' => '101',
+    ]);
+
+    $session = EvaluationSession::create([
+        'title' => 'Session Sprint U18 Automne',
+        'start_date' => '2026-09-01',
+        'end_date' => '2026-10-06',
+        'weeks_count' => 5,
+    ]);
+    $session->groups()->attach([$sprintGroup->id]);
+
+    $result = $service->syncAll($session);
+
+    expect($result['success'])->toBeTrue()
+        ->and($result['evaluations_created'])->toBe(1);
+
+    // Only evaluation for Lucas (Sprint U18) was created for this session
+    $sessionEvals = Evaluation::where('evaluation_session_id', $session->id)->get();
+    expect($sessionEvals)->toHaveCount(1)
+        ->and($sessionEvals->first()->athlete->first_name)->toBe('Lucas');
+});

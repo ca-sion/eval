@@ -20,6 +20,7 @@ class CreateAthlete extends CreateRecord
         if ($startAdaptation) {
             $athlete = $this->record;
             $group = $athlete->group;
+            $weeksCount = (int) config('evaluation.durations.adaptation_weeks', 5);
 
             $athlete->update(['status' => AthleteStatus::Adaptation]);
 
@@ -28,8 +29,8 @@ class CreateAthlete extends CreateRecord
                 'group_id' => $athlete->group_id,
                 'context' => EvaluationContext::Adaptation,
                 'start_date' => Carbon::today(),
-                'end_date' => Carbon::today()->addDays(35),
-                'weeks_count' => 5,
+                'end_date' => Carbon::today()->addWeeks($weeksCount),
+                'weeks_count' => $weeksCount,
                 'sessions_per_week' => $group?->default_sessions_per_week ?? 3,
                 'competitions_planned' => $group?->default_competitions_planned ?? 6,
             ]);

@@ -423,6 +423,8 @@ class EvaluationsRelationManager extends RelationManager
                         ])
                         ->action(function (Evaluation $record, array $data): void {
                             $startDate = Carbon::parse($data['start_date']);
+                            $weeksCount = (int) config('evaluation.durations.evaluation_probation_weeks', 2);
+                            $endDate = $startDate->copy()->addWeeks($weeksCount);
 
                             Evaluation::create([
                                 'athlete_id' => $record->athlete_id,
@@ -430,8 +432,8 @@ class EvaluationsRelationManager extends RelationManager
                                 'parent_evaluation_id' => $record->id,
                                 'context' => EvaluationContext::EvaluationProbation,
                                 'start_date' => $startDate,
-                                'end_date' => $startDate->copy()->addDays(14),
-                                'weeks_count' => 2,
+                                'end_date' => $endDate,
+                                'weeks_count' => $weeksCount,
                                 'sessions_per_week' => $record->sessions_per_week,
                                 'competitions_planned' => $record->competitions_planned,
                             ]);
@@ -439,8 +441,8 @@ class EvaluationsRelationManager extends RelationManager
                             $record->athlete->update(['status' => AthleteStatus::Probation]);
 
                             Notification::make()
-                                ->title('Sursis probatoire de 2 semaines enclenché')
-                                ->body("Période d'observation jusqu'au ".$startDate->copy()->addDays(14)->format('d/m/Y').'.')
+                                ->title("Sursis probatoire de {$weeksCount} semaines enclenché")
+                                ->body("Période d'observation jusqu'au ".$endDate->format('d.m.Y').'.')
                                 ->success()
                                 ->send();
                         }),

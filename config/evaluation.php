@@ -64,4 +64,32 @@ return [
         'max_volunteering_age' => 17,
         'required_volunteering_count' => 2,
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Durées des cycles et contextes d'évaluation (en semaines)
+    |--------------------------------------------------------------------------
+    |
+    | Définition du nombre de semaines pour chaque contexte d'évaluation.
+    |
+    */
+    'durations' => [
+        'collective_session_weeks' => 5,       // Session générale ordinaire du club
+        'adaptation_weeks' => 5,               // Période d'adaptation des nouveaux membres
+        'evaluation_probation_weeks' => 2,     // Sursis probatoire de sélection (art. 10.5)
+        'disciplinary_probation_weeks' => 2,   // Sursis disciplinaire (art. 27.1)
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Période d'adaptation des nouveaux membres
+    |--------------------------------------------------------------------------
+    |
+    | Paramètres appliqués pour l'intégration et l'évaluation initiale
+    | des nouveaux athlètes rejoignant le club.
+    |
+    */
+    'adaptation' => [
+        'recent_entry_months' => 3,            // Seuil d'ancienneté Tiiva pour l'adaptation
+    ],
 ];

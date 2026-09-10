@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\ArbitrageMode;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
@@ -83,14 +84,55 @@ class Group extends Model
         return $this->hasMany(Evaluation::class);
     }
 
+    public function evaluationSessions(): BelongsToMany
+    {
+        return $this->belongsToMany(EvaluationSession::class);
+    }
+
     public function getMobileUrl(): string
     {
         return route('group.mobile', ['group' => $this->access_token]);
     }
 
-    public function getWhatsAppShareUrl(): string
+    public function getWhatsAppShareUrl(?EvaluationSession $session = null): string
     {
-        $text = rawurlencode("Lien d'accès à l'évaluation pour le groupe {$this->name} : ".$this->getMobileUrl());
+        if (! $session) {
+            $session = $this->evaluationSessions()
+                ->where('is_closed', false)
+                ->latest('start_date')
+                ->first()
+                ?? EvaluationSession::where('is_closed', false)
+                    ->whereDoesntHave('groups')
+                    ->latest('start_date')
+                    ->first();
+        }
+
+        $lines = [];
+        $lines[] = 'Bonjour,';
+        $lines[] = "Voici le lien pour compléter les évaluations des athlètes du groupe *{$this->name}*.";
+
+        if ($session) {
+            $lines[] = '';
+            $lines[] = "*Session :* {$session->title}";
+
+            if ($session->start_date && $session->end_date) {
+                $lines[] = "- Période observée : du {$session->start_date->format('d.m.Y')} au {$session->end_date->format('d.m.Y')}";
+            }
+
+            $deadline = $session->effectiveSubmissionDeadline();
+            if ($deadline) {
+                $lines[] = "- Date limite de transmission : *{$deadline->format('d.m.Y')}*";
+            }
+        }
+
+        $lines[] = 'Accès direct au formulaire de saisie :';
+        $lines[] = $this->getMobileUrl();
+        $lines[] = '';
+        $lines[] = "La saisie s'effectue directement depuis votre smartphone. Il est conseillé de rentrer les retard au fur et à mesure des entraînements. Pour l'évaluation, le faire une seule fois avant le délai vous fera gagner du temps. En cas de besoin n'hésitez pas à consulter l'aide (en haut à droite) sous le lien transmis.";
+        $lines[] = '';
+        $lines[] = 'Merci pour votre engagement et bonne évaluation !';
+
+        $text = rawurlencode(implode("\n", $lines));
 
         return "https://api.whatsapp.com/send?text={$text}";
     }

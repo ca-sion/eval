@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class EvaluationSession extends Model
@@ -17,6 +19,7 @@ class EvaluationSession extends Model
         return [
             'start_date' => 'date',
             'end_date' => 'date',
+            'submission_deadline' => 'date',
             'weeks_count' => 'integer',
             'is_closed' => 'boolean',
             'last_tiiva_synced_at' => 'datetime',
@@ -39,5 +42,15 @@ class EvaluationSession extends Model
     public function evaluations(): HasMany
     {
         return $this->hasMany(Evaluation::class);
+    }
+
+    public function groups(): BelongsToMany
+    {
+        return $this->belongsToMany(Group::class);
+    }
+
+    public function effectiveSubmissionDeadline(): ?Carbon
+    {
+        return $this->submission_deadline ?? $this->end_date;
     }
 }

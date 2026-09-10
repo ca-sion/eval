@@ -7,6 +7,7 @@ use App\Enums\EvaluationContext;
 use App\Enums\EvaluationCriterion;
 use App\Enums\EvaluationStatus;
 use App\Models\Evaluation;
+use App\Models\EvaluationSession;
 use App\Models\Group;
 use App\Services\EvaluationCalculatorService;
 use Carbon\Carbon;
@@ -107,18 +108,7 @@ class CoachGroupEvaluation extends Component
             ->with('session')
             ->find($evaluationId);
 
-        if (! $evaluation) {
-            return;
-        }
-
-        // Permet de basculer entre Brouillon et Transmis si la session n'est pas fermée et dans les dates
-        $today = Carbon::today();
-        $startDate = $evaluation->session?->start_date ?? $evaluation->start_date;
-        $endDate = $evaluation->session?->end_date ?? $evaluation->end_date;
-        $inTime = ($startDate && $endDate) ? $today->betweenIncluded($startDate, $endDate) : false;
-        $notClosed = ! ($evaluation->session && $evaluation->session->is_closed);
-
-        if (! $inTime || ! $notClosed) {
+        if (! $evaluation || ! $evaluation->canToggleStatus()) {
             return;
         }
 
@@ -157,7 +147,15 @@ class CoachGroupEvaluation extends Component
                 })->orWhereHas('session', function ($q) use ($today) {
                     $q->where('is_closed', false)
                         ->whereDate('start_date', '<=', $today)
-                        ->whereDate('end_date', '>=', $today);
+                        ->where(function ($sq) use ($today) {
+                            $sq->where(function ($deadl) use ($today) {
+                                $deadl->whereNotNull('submission_deadline')
+                                    ->whereDate('submission_deadline', '>=', $today);
+                            })->orWhere(function ($noDeadl) use ($today) {
+                                $noDeadl->whereNull('submission_deadline')
+                                    ->whereDate('end_date', '>=', $today);
+                            });
+                        });
                 });
             })
             ->get()
@@ -165,9 +163,14 @@ class CoachGroupEvaluation extends Component
 
         $hasCollectiveSession = $evaluations->contains(fn (Evaluation $e) => $e->context === EvaluationContext::Collective);
 
+        $currentSession = $evaluations->first(fn ($e) => $e->session !== null)?->session
+            ?? $this->group->evaluationSessions()->where('is_closed', false)->latest('start_date')->first()
+            ?? EvaluationSession::where('is_closed', false)->whereDoesntHave('groups')->latest('start_date')->first();
+
         return view('livewire.coach-group-evaluation', [
             'evaluations' => $evaluations,
             'hasCollectiveSession' => $hasCollectiveSession,
+            'currentSession' => $currentSession,
             'today' => $today,
         ])->layout('layouts.coach', ['group' => $this->group]);
     }

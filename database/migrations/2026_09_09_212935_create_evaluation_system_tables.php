@@ -56,10 +56,17 @@ return new class extends Migration
             $table->string('title');
             $table->date('start_date');
             $table->date('end_date');
+            $table->date('submission_deadline')->nullable();
             $table->unsignedInteger('weeks_count')->default(5);
             $table->boolean('is_closed')->default(false);
             $table->timestamp('last_tiiva_synced_at')->nullable();
             $table->timestamps();
+        });
+
+        Schema::create('evaluation_session_group', function (Blueprint $table) {
+            $table->foreignId('evaluation_session_id')->constrained('evaluation_sessions')->cascadeOnDelete();
+            $table->foreignId('group_id')->constrained('groups')->cascadeOnDelete();
+            $table->primary(['evaluation_session_id', 'group_id']);
         });
 
         Schema::create('evaluations', function (Blueprint $table) {
@@ -116,6 +123,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('evaluations');
+        Schema::dropIfExists('evaluation_session_group');
         Schema::dropIfExists('evaluation_sessions');
         Schema::dropIfExists('athletes');
         Schema::dropIfExists('groups');

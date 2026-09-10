@@ -91,13 +91,13 @@ class Evaluation extends Model
         }
 
         $startDate = $this->session?->start_date ?? $this->start_date;
-        $endDate = $this->session?->end_date ?? $this->end_date;
+        $deadline = $this->session?->effectiveSubmissionDeadline() ?? $this->end_date;
 
-        if (! $startDate || ! $endDate) {
+        if (! $startDate || ! $deadline) {
             return false;
         }
 
-        return $today->betweenIncluded($startDate, $endDate);
+        return $today->betweenIncluded($startDate, $deadline);
     }
 
     public function currentWeekNumber(): int

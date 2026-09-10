@@ -13,6 +13,7 @@ use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -48,23 +49,34 @@ class EvaluationSessionResource extends Resource
                         TextInput::make('title')
                             ->label('Intitulé de la session')
                             ->required()
-                            ->placeholder('ex. Session d\'automne S35 - 2026')
+                            ->placeholder('ex. Session d\'automne')
                             ->columnSpanFull(),
                         DatePicker::make('start_date')
-                            ->label('Date de début')
+                            ->label('Date de début de période')
                             ->required(),
                         DatePicker::make('end_date')
-                            ->label('Date de fin (échéance)')
+                            ->label('Date de fin de période')
                             ->required(),
+                        DatePicker::make('submission_deadline')
+                            ->label('Date limite de rendu pour les entraîneurs')
+                            ->helperText('Date limite accordée aux entraîneurs pour transmettre leurs évaluations (si vide, la date de fin sera appliquée)'),
                         TextInput::make('weeks_count')
                             ->label('Durée (nombre de semaines)')
                             ->numeric()
                             ->required()
-                            ->default(5),
+                            ->default(fn () => (int) config('evaluation.durations.collective_session_weeks', 5)),
+                        CheckboxList::make('groups')
+                            ->relationship('groups', 'name')
+                            ->label('Groupes concernés')
+                            ->helperText('Sélectionner les groupes ciblés par cette session. Laisser vide pour inclure tous les groupes.')
+                            ->bulkToggleable()
+                            ->columns(3)
+                            ->columnSpanFull(),
                         Toggle::make('is_closed')
                             ->label('Session clôturée')
                             ->helperText('Une fois clôturée, la saisie mobile pour cette session est définitivement verrouillée')
-                            ->default(false),
+                            ->default(false)
+                            ->columnSpanFull(),
                     ]),
             ]);
     }
@@ -81,16 +93,22 @@ class EvaluationSessionResource extends Resource
                     ->weight('bold'),
                 TextColumn::make('start_date')
                     ->label('Début')
-                    ->date('d/m/Y')
+                    ->date('d.m.Y')
                     ->sortable(),
                 TextColumn::make('end_date')
-                    ->label('Échéance')
-                    ->date('d/m/Y')
+                    ->label('Fin')
+                    ->date('d.m.Y')
                     ->sortable(),
-                TextColumn::make('weeks_count')
-                    ->label('Durée')
-                    ->formatStateUsing(fn ($state) => $state.' sem.')
-                    ->alignCenter(),
+                TextColumn::make('submission_deadline')
+                    ->label('Date limite')
+                    ->date('d.m.Y')
+                    ->placeholder('Fin de période')
+                    ->sortable(),
+                TextColumn::make('groups.name')
+                    ->label('Groupes')
+                    ->badge()
+                    ->default('Tous les groupes')
+                    ->limitList(2),
                 IconColumn::make('is_closed')
                     ->label('Clôturée')
                     ->boolean()

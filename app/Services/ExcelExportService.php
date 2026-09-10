@@ -32,7 +32,7 @@ class ExcelExportService
 
         $writer->addRow(Row::fromValues([
             'SESSION D\'ÉVALUATION : '.$session->title,
-            'Période : '.$session->start_date->format('d/m/Y').' au '.$session->end_date->format('d/m/Y'),
+            'Période : '.$session->start_date->format('d.m.Y').' au '.$session->end_date->format('d.m.Y'),
             'Durée : '.$session->weeks_count.' semaines',
         ]));
         $writer->addRow(Row::fromValues([]));

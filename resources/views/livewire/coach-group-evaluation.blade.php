@@ -12,16 +12,39 @@
             <div class="flex items-center gap-2">
                 <h2 class="lg:text-xl font-black text-slate-900 tracking-tight">{{ $group->name }}</h2>
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800">
-                    {{ $evaluations->count() }} {{ Str::plural('athlète', $evaluations->count()) }}
+                    {{ $evaluations->count() }} {{ Str::plural('athlète', $evaluations->count()) }}
                 </span>
             </div>
-            <p class="text-sm text-slate-500 mt-0.5">
-                @if($hasCollectiveSession)
-                    Période d'évaluation en cours
-                @else
-                    Suivi des cycles d'adaptation et de sursis
-                @endif
-            </p>
+            @if($currentSession)
+                <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1 text-xs text-slate-500">
+                    <span class="font-medium text-slate-700">{{ $currentSession->title }}</span>
+                    <span>•</span>
+                    <span>Période observée : {{ $currentSession->start_date?->format('d.m.Y') }} au {{ $currentSession->end_date?->format('d.m.Y') }}</span>
+                    <span>•</span>
+                    @php
+                        $deadline = $currentSession->effectiveSubmissionDeadline();
+                        $diffInDays = $deadline ? (int) $today->diffInDays($deadline, false) : null;
+                    @endphp
+                    @if($deadline)
+                        <span class="inline-flex items-center gap-1 font-medium {{ $diffInDays < 0 ? 'text-red-600' : ($diffInDays <= 3 ? 'text-amber-700' : 'text-slate-600') }}">
+                            <span>Date limite de transmission : {{ $deadline->format('d.m.Y') }}</span>
+                            @if($diffInDays >= 0)
+                                <span class="text-[11px] opacity-80">({{ $diffInDays === 0 ? "aujourd'hui" : "il reste {$diffInDays} j." }})</span>
+                            @else
+                                <span class="text-[11px] font-bold">(délai dépassé)</span>
+                            @endif
+                        </span>
+                    @endif
+                </div>
+            @else
+                <p class="text-sm text-slate-500 mt-0.5">
+                    @if($hasCollectiveSession)
+                        Période d'évaluation en cours
+                    @else
+                        Suivi des cycles d'adaptation et de sursis
+                    @endif
+                </p>
+            @endif
         </div>
 
         <!-- Boutons de bascule Cartes / Tableau (Pleine largeur sur mobile / compact sur grand écran) -->
