@@ -41,8 +41,10 @@ class NdsImportService
                 $cells = $row->toArray();
 
                 // 1. Détection du format officiel J+S (Ligne 'Date')
-                $rowPrefix = trim((string) ($cells[0] ?? ''));
-                if (strcasecmp($rowPrefix, 'Date') === 0 || (isset($cells[1]) && strcasecmp(trim((string) $cells[1]), 'Date') === 0)) {
+                $firstCellStr = trim($this->stringifyCell($cells[0] ?? null));
+                $secondCellStr = trim($this->stringifyCell($cells[1] ?? null));
+
+                if (strcasecmp($firstCellStr, 'Date') === 0 || strcasecmp($secondCellStr, 'Date') === 0) {
                     $isJsFormat = true;
                     foreach ($cells as $colIdx => $val) {
                         if ($val instanceof \DateTimeInterface) {
@@ -63,17 +65,24 @@ class NdsImportService
                 }
 
                 // Détection de la section des participants J+S
-                $rowText = implode(' ', array_slice(array_map('strval', $cells), 0, 4));
-                if (preg_match('/participant/i', $rowText)) {
+                $rowPrefix = implode(' ', array_filter(array_map([$this, 'stringifyCell'], array_slice($cells, 0, 4))));
+                if (preg_match('/participant/i', $rowPrefix)) {
                     $participantsStarted = true;
+
+                    continue;
+                }
+
+                // Détection d'une autre section terminant la liste des participants
+                if ($participantsStarted && preg_match('/(monitrice|moniteur|expert|cadre)/i', $firstCellStr)) {
+                    $participantsStarted = false;
 
                     continue;
                 }
 
                 // 2. Traitement d'une ligne d'athlète au format officiel J+S
                 if ($isJsFormat && $participantsStarted) {
-                    $lastName = trim((string) ($cells[1] ?? ''));
-                    $firstName = trim((string) ($cells[2] ?? ''));
+                    $lastName = trim($this->stringifyCell($cells[1] ?? null));
+                    $firstName = trim($this->stringifyCell($cells[2] ?? null));
 
                     if (empty($lastName) || empty($firstName)) {
                         continue;
@@ -105,7 +114,7 @@ class NdsImportService
                     foreach ($dateMap as $colIdx => $activityDate) {
                         $activityDateStr = $activityDate->format('Y-m-d');
                         if ($activityDateStr >= $sessionStartDate && $activityDateStr <= $sessionEndDate) {
-                            $mark = trim((string) ($cells[$colIdx] ?? ''));
+                            $mark = trim($this->stringifyCell($cells[$colIdx] ?? null));
                             if ($mark !== '' && $mark !== '-' && $mark !== '0') {
                                 $attendancesCount++;
                             }
@@ -139,7 +148,7 @@ class NdsImportService
                 if (! $isJsFormat) {
                     if ($rowIndex === 1) {
                         foreach ($cells as $colIndex => $cellValue) {
-                            $normalized = trim(mb_strtolower((string) $cellValue));
+                            $normalized = trim(mb_strtolower($this->stringifyCell($cellValue)));
                             if (str_contains($normalized, 'nds') || str_contains($normalized, 'numéro')) {
                                 $flatHeaderMap['nds_number'] = $colIndex;
                             } elseif (str_contains($normalized, 'nom') && ! str_contains($normalized, 'prénom')) {
@@ -154,9 +163,14 @@ class NdsImportService
                         continue;
                     }
 
-                    $lastName = trim((string) ($cells[$flatHeaderMap['last_name'] ?? 0] ?? ''));
-                    $firstName = trim((string) ($cells[$flatHeaderMap['first_name'] ?? 1] ?? ''));
-                    $attendances = isset($flatHeaderMap['attendances']) ? (int) ($cells[$flatHeaderMap['attendances']] ?? 0) : 0;
+                    // S'assurer que le fichier tabulaire a bien été reconnu
+                    if (! isset($flatHeaderMap['last_name'], $flatHeaderMap['first_name'])) {
+                        continue;
+                    }
+
+                    $lastName = trim($this->stringifyCell($cells[$flatHeaderMap['last_name']] ?? null));
+                    $firstName = trim($this->stringifyCell($cells[$flatHeaderMap['first_name']] ?? null));
+                    $attendances = isset($flatHeaderMap['attendances']) ? (int) $this->stringifyCell($cells[$flatHeaderMap['attendances']] ?? 0) : 0;
 
                     if (empty($lastName) && empty($firstName)) {
                         continue;
@@ -225,5 +239,25 @@ class NdsImportService
         }
 
         return Athlete::whereRaw('LOWER(TRIM(last_name)) = ? AND LOWER(TRIM(first_name)) LIKE ?', [$cleanLast, "{$firstPart}%"])->first();
+    }
+
+    /**
+     * Convertit une cellule en chaîne de caractères de façon sécurisée (sans erreur DateTimeImmutable).
+     */
+    protected function stringifyCell(mixed $val): string
+    {
+        if ($val === null) {
+            return '';
+        }
+
+        if ($val instanceof \DateTimeInterface) {
+            return $val->format('Y-m-d');
+        }
+
+        if (is_scalar($val)) {
+            return (string) $val;
+        }
+
+        return '';
     }
 }

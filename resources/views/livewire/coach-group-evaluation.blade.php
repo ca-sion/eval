@@ -495,7 +495,7 @@
                                 <!-- C4 -->
                                 <td class="py-2 px-1 text-center whitespace-nowrap">
                                     <select
-                                        wire:change="setScore({{ $eval->id }}, 'c4_commitment', $event.target.value === '' ? null : parseFloat($event.target.value))"
+                                        wire:change="setScore({{ $eval->id }}, 'c4_commitment', $event.target.value)"
                                         {{ ! $isEditable ? 'disabled' : '' }}
                                         class="text-xs py-1 px-1 w-11 sm:w-12 text-center font-bold rounded-lg border-slate-300 focus:border-red-500 focus:ring-red-500 disabled:bg-slate-100 mx-auto block"
                                     >
@@ -509,7 +509,7 @@
                                 <!-- C5 -->
                                 <td class="py-2 px-1 text-center whitespace-nowrap">
                                     <select
-                                        wire:change="setScore({{ $eval->id }}, 'c5_behavior', $event.target.value === '' ? null : parseFloat($event.target.value))"
+                                        wire:change="setScore({{ $eval->id }}, 'c5_behavior', $event.target.value)"
                                         {{ ! $isEditable ? 'disabled' : '' }}
                                         class="text-xs py-1 px-1 w-11 sm:w-12 text-center font-bold rounded-lg border-slate-300 focus:border-red-500 focus:ring-red-500 disabled:bg-slate-100 mx-auto block"
                                     >
@@ -523,7 +523,7 @@
                                 <!-- C6 -->
                                 <td class="py-2 px-1.5 whitespace-nowrap text-center">
                                     <select
-                                        wire:change="setLevel({{ $eval->id }}, $event.target.value === '' ? null : $event.target.value)"
+                                        wire:change="setLevel({{ $eval->id }}, $event.target.value)"
                                         {{ ! $isEditable ? 'disabled' : '' }}
                                         class="text-xs py-1 px-2 w-28 sm:w-32 rounded-lg border-slate-300 focus:border-red-500 focus:ring-red-500 disabled:bg-slate-100 font-medium mx-auto block"
                                     >
@@ -537,7 +537,7 @@
                                 <!-- C7 -->
                                 <td class="py-2 px-1 text-center whitespace-nowrap">
                                     <select
-                                        wire:change="setScore({{ $eval->id }}, 'c7_progress', $event.target.value === '' ? null : parseFloat($event.target.value))"
+                                        wire:change="setScore({{ $eval->id }}, 'c7_progress', $event.target.value)"
                                         {{ ! $isEditable ? 'disabled' : '' }}
                                         class="text-xs py-1 px-1 w-11 sm:w-12 text-center font-bold rounded-lg border-slate-300 focus:border-red-500 focus:ring-red-500 disabled:bg-slate-100 mx-auto block"
                                     >
@@ -551,7 +551,7 @@
                                 <!-- C8 -->
                                 <td class="py-2 px-1 text-center whitespace-nowrap">
                                     <select
-                                        wire:change="setScore({{ $eval->id }}, 'c8_environment', $event.target.value === '' ? null : parseFloat($event.target.value))"
+                                        wire:change="setScore({{ $eval->id }}, 'c8_environment', $event.target.value)"
                                         {{ ! $isEditable ? 'disabled' : '' }}
                                         class="text-xs py-1 px-1 w-11 sm:w-12 text-center font-bold rounded-lg border-slate-300 focus:border-red-500 focus:ring-red-500 disabled:bg-slate-100 mx-auto block"
                                     >

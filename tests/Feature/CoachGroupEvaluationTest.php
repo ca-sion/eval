@@ -144,15 +144,26 @@ test('coach can toggle injury and set qualitative scores', function () {
 
     Livewire::test(CoachGroupEvaluation::class, ['group' => $group])
         ->call('toggleInjury', $eval->id)
-        ->call('setScore', $eval->id, 'c4_commitment', 8.5)
+        ->call('setScore', $eval->id, 'c4_commitment', '8')
+        ->call('setScore', $eval->id, 'c5_behavior', 7.5)
         ->call('setLevel', $eval->id, AthleticLevel::National->value)
         ->call('updateNotes', $eval->id, 'Excellent engagement');
 
     $fresh = $eval->fresh();
     expect($fresh->is_injured)->toBeTrue()
-        ->and($fresh->c4_commitment)->toEqual(8.5)
+        ->and($fresh->c4_commitment)->toEqual(8.0)
+        ->and($fresh->c5_behavior)->toEqual(7.5)
         ->and($fresh->c6_level)->toEqual(AthleticLevel::National)
         ->and($fresh->coach_notes)->toEqual('Excellent engagement');
+
+    // Test resetting score with empty string
+    Livewire::test(CoachGroupEvaluation::class, ['group' => $group])
+        ->call('setScore', $eval->id, 'c4_commitment', '')
+        ->call('setLevel', $eval->id, '');
+
+    $fresh = $eval->fresh();
+    expect($fresh->c4_commitment)->toBeNull()
+        ->and($fresh->c6_level)->toBeNull();
 });
 
 test('strict confidentiality is preserved in coach view', function () {

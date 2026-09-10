@@ -57,7 +57,7 @@ class CoachGroupEvaluation extends Component
         $calculator->calculateAthlete($evaluation);
     }
 
-    public function setScore(int $evaluationId, string $field, ?float $value, EvaluationCalculatorService $calculator): void
+    public function setScore(int $evaluationId, string $field, float|int|string|null $value, EvaluationCalculatorService $calculator): void
     {
         $allowedFields = EvaluationCriterion::qualitativeFields();
         if (! in_array($field, $allowedFields, true)) {
@@ -69,8 +69,10 @@ class CoachGroupEvaluation extends Component
             return;
         }
 
-        if ($value !== null) {
-            $value = min(10.0, max(0.0, round($value, 1)));
+        if ($value !== null && $value !== '') {
+            $value = min(10.0, max(0.0, round((float) $value, 1)));
+        } else {
+            $value = null;
         }
 
         $evaluation->{$field} = $value;
