@@ -29,7 +29,7 @@
         <table style="width: 100%;">
             <tr>
                 <td>
-                    <div class="title">Club des Athlètes de Sion (CA Sion)</div>
+                    <div class="title">CA Sion</div>
                     <div class="subtitle">Fiche individuelle d'entretien et d'évaluation • Statuts Art. 3, 10 & 27</div>
                 </td>
                 <td style="text-align: right;">
@@ -87,7 +87,7 @@
                 $c5 = \App\Enums\EvaluationCriterion::C5_Behavior;
                 $c6 = \App\Enums\EvaluationCriterion::C6_Performance;
                 $c7 = \App\Enums\EvaluationCriterion::C7_Progress;
-                $c8 = \App\Enums\EvaluationCriterion::C8_SportsHygiene;
+                $c8 = \App\Enums\EvaluationCriterion::C8_Environment;
                 $c9 = \App\Enums\EvaluationCriterion::C9_Volunteering;
             @endphp
             <tr>
@@ -169,8 +169,8 @@
                 <td><strong>{{ $c8->code() }} : {{ $c8->shortLabel() }}</strong></td>
                 <td>Entraîneur</td>
                 <td style="text-align: center;">{{ number_format($c8->defaultWeight() * 100, 0) }}%</td>
-                <td style="text-align: center;" class="{{ $evaluation->c8_sports_hygiene !== null && $evaluation->c8_sports_hygiene < 6 ? 'score-bad' : 'score-good' }}">
-                    {{ $evaluation->c8_sports_hygiene !== null ? number_format($evaluation->c8_sports_hygiene, 1) . ' / 10' : 'Non noté' }}
+                <td style="text-align: center;" class="{{ $evaluation->c8_environment !== null && $evaluation->c8_environment < 6 ? 'score-bad' : 'score-good' }}">
+                    {{ $evaluation->c8_environment !== null ? number_format($evaluation->c8_environment, 1) . ' / 10' : 'Non noté' }}
                 </td>
                 <td>{{ $c8->getDescription() }}</td>
             </tr>

@@ -12,12 +12,12 @@ return [
     |
     */
     'weights' => [
-        'c1' => 0.20, // Assiduité (NDS)
+        'c1' => 0.20, // Assiduité
         'c2' => 0.05, // Ponctualité (Retards)
-        'c3' => 0.15, // Compétitions (Tiiva)
+        'c3' => 0.15, // Compétitions
         'c4' => 0.15, // Implication
         'c5' => 0.15, // Comportement
-        'c6' => 0.10, // Niveau athlétique
+        'c6' => 0.10, // Niveau
         'c7' => 0.10, // Progression
         'c8' => 0.05, // Hygiène et environnement
         'c9' => 0.05, // Bénévolat des parents
@@ -32,7 +32,8 @@ return [
     |
     */
     'penalties' => [
-        'retard_deduction' => 1.5,
+        'retard_base_score' => 6.0,
+        'retard_deduction' => 0.3,
     ],
 
     /*
@@ -57,8 +58,8 @@ return [
     */
     'defaults' => [
         'sessions_per_week' => 2,
-        'competitions_planned' => 4,
-        'min_score' => 6.50,
+        'competitions_planned' => 3,
+        'min_score' => 5.00,
         'quota_places' => 20,
         'max_volunteering_age' => 17,
         'required_volunteering_count' => 2,

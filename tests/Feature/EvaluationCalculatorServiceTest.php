@@ -37,7 +37,7 @@ test('c1 assiduity calculates correctly when attendances provided', function () 
     expect($eval->c1_score)->toEqual(8.0);
 });
 
-test('c2 lateness deducts 1.5 points per late arrival and is bounded at 0', function () {
+test('c2 lateness deducts 0.3 points per late arrival from base score 6.0 and is bounded at 0', function () {
     $group = Group::create(['name' => 'U16 Sprint']);
     $athlete = Athlete::create([
         'group_id' => $group->id,
@@ -51,14 +51,14 @@ test('c2 lateness deducts 1.5 points per late arrival and is bounded at 0', func
         'group_id' => $group->id,
         'start_date' => '2026-09-01',
         'end_date' => '2026-10-06',
-        'lateness_count' => 2, // 10 - (2 * 1.5) = 7.0
+        'lateness_count' => 2, // 6.0 - (2 * 0.3) = 5.4
     ]);
 
     $service = new EvaluationCalculatorService;
     $service->calculateAthlete($eval);
-    expect($eval->c2_score)->toEqual(7.0);
+    expect($eval->c2_score)->toEqual(5.4);
 
-    $eval->lateness_count = 10; // 10 - 15 = max(0, -5) = 0
+    $eval->lateness_count = 25; // 6.0 - 7.5 = max(0, -1.5) = 0
     $service->calculateAthlete($eval);
     expect($eval->c2_score)->toEqual(0.0);
 });
@@ -187,12 +187,12 @@ test('injury neutralizes c1 and c3 and redistributes remaining weights dynamical
     // C3 is neutralized due to injury (null)
     // C9 is neutralized due to age (null)
     // Active criteria:
-    // C2 (lateness=0 -> 10.0, weight 0.05) -> 0.5
-    // C4 (commitment=8.0, weight 0.15) -> 1.2
-    // C5 (behavior=6.0, weight 0.15) -> 0.9
+    // C2 (lateness=0 -> 6.0, weight 0.05) -> 0.30
+    // C4 (commitment=8.0, weight 0.15) -> 1.20
+    // C5 (behavior=6.0, weight 0.15) -> 0.90
     // Sum weights = 0.05 + 0.15 + 0.15 = 0.35
-    // Sum weighted scores = 0.5 + 1.2 + 0.9 = 2.6
-    // Expected base_average = 2.6 / 0.35 = 7.42857 -> 7.43
+    // Sum weighted scores = 0.30 + 1.20 + 0.90 = 2.40
+    // Expected base_average = 2.40 / 0.35 = 6.85714 -> 6.86
     $eval = Evaluation::create([
         'athlete_id' => $athlete->id,
         'group_id' => $group->id,
@@ -211,8 +211,8 @@ test('injury neutralizes c1 and c3 and redistributes remaining weights dynamical
     expect($eval->c1_score)->toBeNull()
         ->and($eval->c3_score)->toBeNull()
         ->and($eval->c9_score)->toBeNull()
-        ->and($eval->base_average)->toEqual(7.43)
-        ->and($eval->final_score)->toEqual(7.43);
+        ->and($eval->base_average)->toEqual(6.86)
+        ->and($eval->final_score)->toEqual(6.86);
 });
 
 test('club engagement bonus adds 0.75 and caps at 10.00', function () {
@@ -252,7 +252,7 @@ test('club engagement bonus adds 0.75 and caps at 10.00', function () {
         'c4_commitment' => 10.0,
         'c5_behavior' => 10.0,
         'c7_progress' => 10.0,
-        'c8_sports_hygiene' => 10.0,
+        'c8_environment' => 10.0,
         'c6_level' => AthleticLevel::International,
         'has_club_engagement' => true,
     ]);
@@ -396,7 +396,7 @@ test('evaluation criteria enum methods work correctly', function () {
             'c4_commitment',
             'c5_behavior',
             'c7_progress',
-            'c8_sports_hygiene',
+            'c8_environment',
         ]);
 
     expect(EvaluationCriterion::C1_Attendance->isNeutralizedOnInjury())->toBeTrue()
@@ -431,19 +431,19 @@ test('evaluation criteria enum methods work correctly', function () {
         'c5_behavior' => 9.0,
         'c6_level' => AthleticLevel::Regional,
         'c7_progress' => 8.0,
-        'c8_sports_hygiene' => 7.5,
+        'c8_environment' => 7.5,
         'parent_volunteering_count' => 3,
         'is_injured' => false,
     ]);
 
     expect(EvaluationCriterion::C1_Attendance->calculateScore($eval))->toEqual(8.0)
-        ->and(EvaluationCriterion::C2_Punctuality->calculateScore($eval))->toEqual(7.0)
+        ->and(EvaluationCriterion::C2_Punctuality->calculateScore($eval))->toEqual(5.4)
         ->and(EvaluationCriterion::C3_Competitions->calculateScore($eval))->toEqual(8.33)
         ->and(EvaluationCriterion::C4_Commitment->calculateScore($eval))->toEqual(8.5)
         ->and(EvaluationCriterion::C5_Behavior->calculateScore($eval))->toEqual(9.0)
         ->and(EvaluationCriterion::C6_Performance->calculateScore($eval))->toEqual(7.5)
         ->and(EvaluationCriterion::C7_Progress->calculateScore($eval))->toEqual(8.0)
-        ->and(EvaluationCriterion::C8_SportsHygiene->calculateScore($eval))->toEqual(7.5)
+        ->and(EvaluationCriterion::C8_Environment->calculateScore($eval))->toEqual(7.5)
         ->and(EvaluationCriterion::C9_Volunteering->calculateScore($eval))->toEqual(8.75);
 });
 

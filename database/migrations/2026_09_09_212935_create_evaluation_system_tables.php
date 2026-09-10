@@ -78,7 +78,7 @@ return new class extends Migration
             $table->decimal('c5_behavior', 3, 1)->nullable();
             $table->string('c6_level')->nullable();
             $table->decimal('c7_progress', 3, 1)->nullable();
-            $table->decimal('c8_sports_hygiene', 3, 1)->nullable();
+            $table->decimal('c8_environment', 3, 1)->nullable();
             $table->text('coach_notes')->nullable();
             $table->string('status')->default('draft');
 

@@ -39,7 +39,7 @@ class Evaluation extends Model
             'c4_commitment' => 'float',
             'c5_behavior' => 'float',
             'c7_progress' => 'float',
-            'c8_sports_hygiene' => 'float',
+            'c8_environment' => 'float',
             'c1_score' => 'float',
             'c2_score' => 'float',
             'c3_score' => 'float',

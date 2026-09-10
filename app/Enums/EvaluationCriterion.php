@@ -17,7 +17,7 @@ enum EvaluationCriterion: string implements HasColor, HasDescription, HasLabel
     case C5_Behavior = 'c5';
     case C6_Performance = 'c6';
     case C7_Progress = 'c7';
-    case C8_SportsHygiene = 'c8';
+    case C8_Environment = 'c8';
     case C9_Volunteering = 'c9';
 
     /**
@@ -33,7 +33,7 @@ enum EvaluationCriterion: string implements HasColor, HasDescription, HasLabel
             self::C5_Behavior => 'C5',
             self::C6_Performance => 'C6',
             self::C7_Progress => 'C7',
-            self::C8_SportsHygiene => 'C8',
+            self::C8_Environment => 'C8',
             self::C9_Volunteering => 'C9',
         };
     }
@@ -51,7 +51,7 @@ enum EvaluationCriterion: string implements HasColor, HasDescription, HasLabel
             self::C5_Behavior => 'Comportement et esprit d’équipe',
             self::C6_Performance => 'Niveau et potentiel',
             self::C7_Progress => 'Progression',
-            self::C8_SportsHygiene => 'Hygiène et environnement',
+            self::C8_Environment => 'Hygiène de vie et environnement',
             self::C9_Volunteering => 'Engagement bénévole familial',
         };
     }
@@ -69,7 +69,7 @@ enum EvaluationCriterion: string implements HasColor, HasDescription, HasLabel
             self::C5_Behavior => 'Comportement',
             self::C6_Performance => 'Niveau',
             self::C7_Progress => 'Progression',
-            self::C8_SportsHygiene => 'Hygiène',
+            self::C8_Environment => 'Environnement',
             self::C9_Volunteering => 'Bénévolat',
         };
     }
@@ -80,14 +80,14 @@ enum EvaluationCriterion: string implements HasColor, HasDescription, HasLabel
     public function getDescription(): string
     {
         return match ($this) {
-            self::C1_Attendance => 'Présences réelles NDS J+S rapportées au volume attendu (séances prévues sur la période). Neutralisé sur blessure.',
-            self::C2_Punctuality => 'Note de base 10.0 réduite par déduction forfaitaire pour chaque retard non excusé consigné.',
-            self::C3_Competitions => 'Taux de participation aux compétitions rapporté aux objectifs fixés. Neutralisé sur blessure.',
+            self::C1_Attendance => 'Présences réelles NDS J+S rapportées au volume de séances prévues sur la période. Neutralisé si blessure.',
+            self::C2_Punctuality => 'Note de base 6.0 (standard) réduite de 0.3 pt pour chaque retard consigné.',
+            self::C3_Competitions => 'Nombre de participation aux compétitions rapporté aux nombre de compétitions fixés. Neutralisé si blessure.',
             self::C4_Commitment => 'Qualité d’écoute des consignes, rigueur, concentration et intensité déployée lors des entraînements.',
             self::C5_Behavior => 'Respect des camarades, des entraîneurs, des règles de vie et soin apporté aux installations et au matériel.',
             self::C6_Performance => 'Niveau en compétition (cantonal, romand, national, international). Il n\'y a pas de malus. Ce critère apporte quoi qu\'il en soit un bonus.',
             self::C7_Progress => 'Évolution technique, maîtrise gestuelle et progression athlétique constatées sur la période.',
-            self::C8_SportsHygiene => 'Place du sport dans la vie privée, hygiène de vie (sommeil, récupération, gestion des excès/fêtes/alcool chez les adultes, plans hors club respectés, écoute du corps, régulation des courses le week-end) et qualité de l\'environnement familial (soutien des parents sans omniprésence étouffante, suivi médical/physio sérieux si blessé, adhésion à la philosophie du club plutôt que discours contraire au coach).',
+            self::C8_Environment => 'Place du sport dans la vie privée, hygiène de vie (sommeil, récupération, gestion des excès/fêtes/alcool chez les adultes, plans hors club respectés, écoute du corps, régulation des courses le week-end) et qualité de l\'environnement familial (soutien des parents sans omniprésence étouffante, suivi médical/physio sérieux si blessé, adhésion à la philosophie du club plutôt que discours contraire au coach).',
             self::C9_Volunteering => 'Participation active des parents aux manifestations organisées par le club.',
         };
     }
@@ -105,7 +105,7 @@ enum EvaluationCriterion: string implements HasColor, HasDescription, HasLabel
             self::C5_Behavior => 'c5_behavior',
             self::C6_Performance => 'c6_score',
             self::C7_Progress => 'c7_progress',
-            self::C8_SportsHygiene => 'c8_sports_hygiene',
+            self::C8_Environment => 'c8_environment',
             self::C9_Volunteering => 'c9_score',
         };
     }
@@ -138,7 +138,7 @@ enum EvaluationCriterion: string implements HasColor, HasDescription, HasLabel
             self::C5_Behavior => 0.15,
             self::C6_Performance => 0.10,
             self::C7_Progress => 0.10,
-            self::C8_SportsHygiene => 0.05,
+            self::C8_Environment => 0.05,
             self::C9_Volunteering => 0.05,
         });
     }
@@ -176,6 +176,29 @@ enum EvaluationCriterion: string implements HasColor, HasDescription, HasLabel
     }
 
     /**
+     * Indique si le critère est applicable et actif pour l'évaluation donnée.
+     */
+    public function isApplicable(Evaluation $evaluation): bool
+    {
+        if ($evaluation->is_injured && $this->isNeutralizedOnInjury()) {
+            return false;
+        }
+
+        if ($this === self::C9_Volunteering) {
+            $evaluation->loadMissing(['athlete', 'group']);
+            $maxAge = $evaluation->group?->max_volunteering_age ?? (int) config('evaluation.defaults.max_volunteering_age', 17);
+            $startYear = $evaluation->start_date ? (int) Carbon::parse($evaluation->start_date)->year : (int) date('Y');
+            $athleteAge = $evaluation->athlete ? ($startYear - (int) $evaluation->athlete->birth_year) : 0;
+
+            if ($athleteAge > $maxAge) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Âge maximum au-delà duquel ce critère n'est plus applicable.
      */
     public function maxApplicableAge(): ?int
@@ -194,7 +217,7 @@ enum EvaluationCriterion: string implements HasColor, HasDescription, HasLabel
     public function scale(): array
     {
         return match ($this) {
-            self::C4_Commitment, self::C5_Behavior, self::C7_Progress, self::C8_SportsHygiene => [
+            self::C4_Commitment, self::C5_Behavior, self::C7_Progress, self::C8_Environment => [
                 'min' => 0.0,
                 'max' => 10.0,
                 'step' => 1.0,
@@ -217,7 +240,7 @@ enum EvaluationCriterion: string implements HasColor, HasDescription, HasLabel
         return match ($this) {
             self::C1_Attendance, self::C3_Competitions => 'info',
             self::C2_Punctuality => 'warning',
-            self::C4_Commitment, self::C5_Behavior, self::C7_Progress, self::C8_SportsHygiene => 'primary',
+            self::C4_Commitment, self::C5_Behavior, self::C7_Progress, self::C8_Environment => 'primary',
             self::C6_Performance => 'success',
             self::C9_Volunteering => 'gray',
         };
@@ -236,7 +259,7 @@ enum EvaluationCriterion: string implements HasColor, HasDescription, HasLabel
             self::C5_Behavior => 'teal',
             self::C6_Performance => 'violet',
             self::C7_Progress => 'cyan',
-            self::C8_SportsHygiene => 'rose',
+            self::C8_Environment => 'rose',
             self::C9_Volunteering => 'slate',
         };
     }
@@ -252,7 +275,7 @@ enum EvaluationCriterion: string implements HasColor, HasDescription, HasLabel
             self::C4_Commitment,
             self::C5_Behavior,
             self::C7_Progress,
-            self::C8_SportsHygiene,
+            self::C8_Environment,
         ];
     }
 
@@ -520,9 +543,10 @@ enum EvaluationCriterion: string implements HasColor, HasDescription, HasLabel
             })(),
 
             self::C2_Punctuality => (function () use ($evaluation): float {
-                $retardDeduction = (float) config('evaluation.penalties.retard_deduction', 1.5);
+                $baseScore = (float) config('evaluation.penalties.retard_base_score', 6.0);
+                $retardDeduction = (float) config('evaluation.penalties.retard_deduction', 0.3);
 
-                return round(max(0.0, 10.0 - ($evaluation->lateness_count * $retardDeduction)), 2);
+                return round(max(0.0, $baseScore - ($evaluation->lateness_count * $retardDeduction)), 2);
             })(),
 
             self::C3_Competitions => (function () use ($evaluation): ?float {
@@ -554,7 +578,7 @@ enum EvaluationCriterion: string implements HasColor, HasDescription, HasLabel
 
             self::C7_Progress => $evaluation->c7_progress !== null ? (float) $evaluation->c7_progress : null,
 
-            self::C8_SportsHygiene => $evaluation->c8_sports_hygiene !== null ? (float) $evaluation->c8_sports_hygiene : null,
+            self::C8_Environment => $evaluation->c8_environment !== null ? (float) $evaluation->c8_environment : null,
 
             self::C9_Volunteering => (function () use ($evaluation): ?float {
                 $evaluation->loadMissing(['athlete', 'group']);

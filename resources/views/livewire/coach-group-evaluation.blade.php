@@ -82,7 +82,7 @@
                         c5: {{ $eval->c5_behavior !== null ? (float)$eval->c5_behavior : 'null' }},
                         c6: '{{ $eval->c6_level?->value ?? '' }}',
                         c7: {{ $eval->c7_progress !== null ? (float)$eval->c7_progress : 'null' }},
-                        c8: {{ $eval->c8_sports_hygiene !== null ? (float)$eval->c8_sports_hygiene : 'null' }},
+                        c8: {{ $eval->c8_environment !== null ? (float)$eval->c8_environment : 'null' }},
                     }"
                     class="bg-white rounded-2xl shadow-sm border {{ $eval->is_injured ? 'border-amber-300 ring-1 ring-amber-200' : ($isSubmitted ? 'border-slate-300 bg-slate-50/20' : 'border-slate-200') }} overflow-hidden transition-all duration-150"
                 >
@@ -248,7 +248,7 @@
                                 $c5 = \App\Enums\EvaluationCriterion::C5_Behavior;
                                 $c6 = \App\Enums\EvaluationCriterion::C6_Performance;
                                 $c7 = \App\Enums\EvaluationCriterion::C7_Progress;
-                                $c8 = \App\Enums\EvaluationCriterion::C8_SportsHygiene;
+                                $c8 = \App\Enums\EvaluationCriterion::C8_Environment;
                             @endphp
                             <div>
                                 <div class="flex items-center justify-between mb-1.5 gap-2" title="{{ $c4->getDescription() }}">
@@ -352,13 +352,13 @@
                                         <span class="truncate">{{ $c8->code() }} : {{ $c8->getLabel() }}</span>
                                         <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                     </span>
-                                    <span class="text-xs font-extrabold text-red-600 flex-shrink-0 whitespace-nowrap" x-text="c8 !== null ? (Number(c8).toFixed(1) + ' / 10') : 'Non noté'">{{ $eval->c8_sports_hygiene !== null ? number_format($eval->c8_sports_hygiene, 1) . ' / 10' : 'Non noté' }}</span>
+                                    <span class="text-xs font-extrabold text-red-600 flex-shrink-0 whitespace-nowrap" x-text="c8 !== null ? (Number(c8).toFixed(1) + ' / 10') : 'Non noté'">{{ $eval->c8_environment !== null ? number_format($eval->c8_environment, 1) . ' / 10' : 'Non noté' }}</span>
                                 </div>
                                 <div class="grid grid-cols-11 gap-0.5 sm:gap-1 w-full">
                                     @for($i = 0; $i <= 10; $i++)
                                         <button
                                             type="button"
-                                            @click="c8 = {{ $i }}; $wire.setScore({{ $eval->id }}, 'c8_sports_hygiene', {{ $i }})"
+                                            @click="c8 = {{ $i }}; $wire.setScore({{ $eval->id }}, 'c8_environment', {{ $i }})"
                                             {{ ! $isEditable ? 'disabled' : '' }}
                                             :class="c8 !== null && Number(c8) === {{ $i }} ? 'bg-red-600 text-white shadow-sm ring-1 ring-red-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
                                             class="h-8 sm:h-8.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50 p-0 flex items-center justify-center active:scale-95"
@@ -416,9 +416,9 @@
                                 <div class="font-black text-slate-900 text-xs">C7</div>
                                 <div class="text-[9px] font-semibold text-slate-400 normal-case block truncate max-w-[48px] mx-auto leading-tight" title="{{ \App\Enums\EvaluationCriterion::C7_Progress->shortLabel() }}">{{ \App\Enums\EvaluationCriterion::C7_Progress->shortLabel() }}</div>
                             </th>
-                            <th class="py-2 px-1 text-center w-12 sm:w-14 cursor-help" title="{{ \App\Enums\EvaluationCriterion::C8_SportsHygiene->getDescription() }}">
+                            <th class="py-2 px-1 text-center w-12 sm:w-14 cursor-help" title="{{ \App\Enums\EvaluationCriterion::C8_Environment->getDescription() }}">
                                 <div class="font-black text-slate-900 text-xs">C8</div>
-                                <div class="text-[9px] font-semibold text-slate-400 normal-case block truncate max-w-[48px] mx-auto leading-tight" title="{{ \App\Enums\EvaluationCriterion::C8_SportsHygiene->shortLabel() }}">{{ \App\Enums\EvaluationCriterion::C8_SportsHygiene->shortLabel() }}</div>
+                                <div class="text-[9px] font-semibold text-slate-400 normal-case block truncate max-w-[48px] mx-auto leading-tight" title="{{ \App\Enums\EvaluationCriterion::C8_Environment->shortLabel() }}">{{ \App\Enums\EvaluationCriterion::C8_Environment->shortLabel() }}</div>
                             </th>
                             <th class="py-2.5 px-3 text-left w-32 sm:w-44 whitespace-nowrap">Notes</th>
                             <th class="py-2.5 px-2 text-center w-24 sm:w-28 whitespace-nowrap">État</th>
@@ -551,13 +551,13 @@
                                 <!-- C8 -->
                                 <td class="py-2 px-1 text-center whitespace-nowrap">
                                     <select
-                                        wire:change="setScore({{ $eval->id }}, 'c8_sports_hygiene', $event.target.value === '' ? null : parseFloat($event.target.value))"
+                                        wire:change="setScore({{ $eval->id }}, 'c8_environment', $event.target.value === '' ? null : parseFloat($event.target.value))"
                                         {{ ! $isEditable ? 'disabled' : '' }}
                                         class="text-xs py-1 px-1 w-11 sm:w-12 text-center font-bold rounded-lg border-slate-300 focus:border-red-500 focus:ring-red-500 disabled:bg-slate-100 mx-auto block"
                                     >
                                         <option value="">-</option>
                                         @for($i = 0; $i <= 10; $i++)
-                                            <option value="{{ $i }}" @selected($eval->c8_sports_hygiene !== null && (float)$eval->c8_sports_hygiene === (float)$i)>{{ $i }}</option>
+                                            <option value="{{ $i }}" @selected($eval->c8_environment !== null && (float)$eval->c8_environment === (float)$i)>{{ $i }}</option>
                                         @endfor
                                     </select>
                                 </td>
