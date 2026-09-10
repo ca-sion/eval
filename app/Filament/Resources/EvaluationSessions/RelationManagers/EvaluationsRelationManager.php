@@ -34,7 +34,10 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\TextInputColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Enums\RecordActionsPosition;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
 class EvaluationsRelationManager extends RelationManager
@@ -367,12 +370,38 @@ class EvaluationsRelationManager extends RelationManager
                         ->toggleable(isToggledHiddenByDefault: true),
                 ]),
             ])
+            ->filters([
+                SelectFilter::make('group_id')
+                    ->label('Groupe d\'entraînement')
+                    ->relationship('group', 'name')
+                    ->searchable()
+                    ->preload(),
+
+                SelectFilter::make('decision')
+                    ->label('Décision d\'arbitrage')
+                    ->options(EvaluationDecision::class),
+
+                Filter::make('is_injured')
+                    ->label('Athlètes blessés')
+                    ->query(fn (Builder $query) => $query->where('is_injured', true)),
+
+                Filter::make('has_club_engagement')
+                    ->label('Bonus engagement accordé')
+                    ->query(fn (Builder $query) => $query->where('has_club_engagement', true)),
+            ])
             ->recordActions([
                 ActionGroup::make([
+                    Action::make('interview_pdf')
+                        ->label('Fiche PDF')
+                        ->icon(Heroicon::OutlinedDocumentArrowDown)
+                        ->color('gray')
+                        ->tooltip('Télécharger la fiche d\'entretien (PDF)')
+                        ->url(fn (Evaluation $record) => route('evaluations.pdf', $record))
+                        ->openUrlInNewTab(),
                     Action::make('probation')
-                        ->label('Sursis probatoire (Art. 10.5)')
+                        ->label('Sursis probatoire (art. 10.5)')
                         ->icon(Heroicon::OutlinedClock)
-                        ->color('warning')
+                        ->color('gray')
                         ->visible(fn (Evaluation $record) => $record->decision === EvaluationDecision::ProbationNeeded || ($record->final_score !== null && $record->final_score < 6.5))
                         ->form([
                             DatePicker::make('start_date')
@@ -404,17 +433,10 @@ class EvaluationsRelationManager extends RelationManager
                                 ->send();
                         }),
 
-                    Action::make('interview_pdf')
-                        ->label('Fiche d\'entretien (PDF)')
-                        ->icon(Heroicon::OutlinedDocumentArrowDown)
-                        ->color('gray')
-                        ->url(fn (Evaluation $record) => route('evaluations.pdf', $record))
-                        ->openUrlInNewTab(),
-
                     Action::make('validate_athlete')
-                        ->label('Valider définitivement (Art. 10)')
+                        ->label('Valider définitivement (art. 10)')
                         ->icon(Heroicon::OutlinedCheckCircle)
-                        ->color('success')
+                        ->color('gray')
                         ->requiresConfirmation()
                         ->modalHeading('Valider l\'admission définitive de l\'athlète ?')
                         ->visible(fn (Evaluation $record) => in_array($record->context, [EvaluationContext::Adaptation, EvaluationContext::EvaluationProbation, EvaluationContext::DisciplinaryProbation]))
@@ -428,7 +450,7 @@ class EvaluationsRelationManager extends RelationManager
                         }),
 
                     Action::make('exclude_athlete')
-                        ->label('Non-admission / exclusion (Art. 27)')
+                        ->label('Non-admission ou exclusion (art. 27)')
                         ->icon(Heroicon::OutlinedXCircle)
                         ->color('danger')
                         ->requiresConfirmation()
@@ -448,7 +470,7 @@ class EvaluationsRelationManager extends RelationManager
                     DeleteAction::make(),
                 ])
                     ->icon(Heroicon::EllipsisVertical)
-                    ->tooltip('Actions'),
+                    ->tooltip('Actions statutaires'),
             ], position: RecordActionsPosition::BeforeCells)
             ->toolbarActions([
                 BulkActionGroup::make([
@@ -475,7 +497,8 @@ class EvaluationsRelationManager extends RelationManager
                         }),
 
                     BulkAction::make('set_sessions')
-                        ->label('Définir séances / semaine')
+                        ->label('Définir les séances par semaine')
+                        ->icon(Heroicon::OutlinedCalendar)
                         ->form([
                             TextInput::make('sessions_per_week')->numeric()->required()->label('Séances par semaine'),
                         ])
@@ -491,7 +514,8 @@ class EvaluationsRelationManager extends RelationManager
                         }),
 
                     BulkAction::make('set_competitions')
-                        ->label('Définir compétitions prévues')
+                        ->label('Définir les compétitions prévues')
+                        ->icon(Heroicon::OutlinedTrophy)
                         ->form([
                             TextInput::make('competitions_planned')->numeric()->required()->label('Compétitions prévues'),
                         ])
@@ -507,7 +531,8 @@ class EvaluationsRelationManager extends RelationManager
                         }),
 
                     BulkAction::make('toggle_club_bonus')
-                        ->label('Attribuer le bonus club (+0.75)')
+                        ->label('Attribuer le bonus club (+0.75 pt)')
+                        ->icon(Heroicon::OutlinedHeart)
                         ->action(function (Collection $records): void {
                             $calculator = app(EvaluationCalculatorService::class);
                             foreach ($records as $record) {

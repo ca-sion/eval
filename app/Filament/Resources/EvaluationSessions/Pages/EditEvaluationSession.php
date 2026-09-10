@@ -32,10 +32,16 @@ class EditEvaluationSession extends EditRecord
         $session = $this->record;
 
         return [
+            Action::make('workflow')
+                ->label('Piloter le workflow')
+                ->icon(Heroicon::OutlinedSparkles)
+                ->color('primary')
+                ->url(fn () => EvaluationSessionResource::getUrl('workflow', ['record' => $session])),
+
             Action::make('initialize_evaluations')
                 ->label('Initialiser pour tous les groupes')
                 ->icon(Heroicon::OutlinedSparkles)
-                ->color('primary')
+                ->color('gray')
                 ->requiresConfirmation()
                 ->modalHeading('Générer les évaluations pour tous les athlètes actifs ?')
                 ->modalDescription('Une fiche d\'évaluation collective sera créée pour chaque athlète actif dans son groupe d\'entraînement actuel.')
@@ -75,9 +81,9 @@ class EditEvaluationSession extends EditRecord
                 }),
 
             Action::make('recalculate_arbitrate')
-                ->label('Recalculer & Arbitrer')
+                ->label('Recalculer et arbitrer')
                 ->icon(Heroicon::OutlinedScale)
-                ->color('success')
+                ->color('gray')
                 ->action(function () use ($session): void {
                     $calculator = app(EvaluationCalculatorService::class);
                     $groups = Group::whereHas('evaluations', fn ($q) => $q->where('evaluation_session_id', $session->id))->get();
@@ -95,7 +101,7 @@ class EditEvaluationSession extends EditRecord
 
             ActionGroup::make([
                 Action::make('import_tiiva')
-                    ->label('Importer données Tiiva (Excel/CSV)')
+                    ->label('Importer les données Tiiva (Excel ou CSV)')
                     ->icon(Heroicon::OutlinedArrowUpTray)
                     ->form([
                         FileUpload::make('file')
@@ -125,11 +131,11 @@ class EditEvaluationSession extends EditRecord
                     }),
 
                 Action::make('import_nds')
-                    ->label('Importer présences NDS (Excel)')
+                    ->label('Importer les présences NDS (Excel)')
                     ->icon(Heroicon::OutlinedDocumentCheck)
                     ->form([
                         FileUpload::make('file')
-                            ->label('Classeur officiel NDS J+S (.xlsx)')
+                            ->label('Classeur officiel NDS Jeunesse+Sport (.xlsx)')
                             ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'])
                             ->disk('local')
                             ->directory('imports')
@@ -160,24 +166,22 @@ class EditEvaluationSession extends EditRecord
                             ->send();
                     }),
             ])
-                ->label('Imports')
+                ->label('Imports de données')
                 ->icon(Heroicon::OutlinedArrowDownTray),
 
             ActionGroup::make([
                 Action::make('export_pdf_comite')
-                    ->label('Procès-Verbal officiel Comité (PDF)')
+                    ->label('Procès-verbal (PDF)')
                     ->icon(Heroicon::OutlinedDocumentText)
-                    ->color('danger')
                     ->url(fn () => route('evaluation-sessions.minutes.pdf', $session))
                     ->openUrlInNewTab(),
 
                 Action::make('export_excel')
-                    ->label('Classeur de résultats (Excel multi-onglets)')
+                    ->label('Evaluations (Excel)')
                     ->icon(Heroicon::OutlinedTableCells)
-                    ->color('success')
                     ->action(fn () => app(ExcelExportService::class)->exportSession($session)),
             ])
-                ->label('Exports officiels')
+                ->label('Exports et documents')
                 ->icon(Heroicon::OutlinedArrowUpOnSquare),
 
             DeleteAction::make(),

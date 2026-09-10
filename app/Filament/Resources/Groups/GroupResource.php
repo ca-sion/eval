@@ -6,9 +6,11 @@ use App\Enums\ArbitrageMode;
 use App\Filament\Resources\Groups\Pages\CreateGroup;
 use App\Filament\Resources\Groups\Pages\EditGroup;
 use App\Filament\Resources\Groups\Pages\ListGroups;
+use App\Filament\Resources\Groups\RelationManagers\AthletesRelationManager;
 use App\Models\Group;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -20,6 +22,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class GroupResource extends Resource
@@ -80,7 +83,7 @@ class GroupResource extends Resource
                             ->default(6.50),
                     ]),
 
-                Section::make('Défauts d\'entraînement et bénévolat')
+                Section::make('Paramètres par défaut d\'entraînement et de bénévolat')
                     ->columns(2)
                     ->schema([
                         TextInput::make('default_sessions_per_week')
@@ -94,7 +97,7 @@ class GroupResource extends Resource
                             ->required()
                             ->default(6),
                         TextInput::make('max_volunteering_age')
-                            ->label('Âge max. pour critère bénévolat (ans)')
+                            ->label('Âge maximum pour le bénévolat (ans)')
                             ->numeric()
                             ->required()
                             ->default(14)
@@ -118,17 +121,17 @@ class GroupResource extends Resource
                     ->sortable()
                     ->weight('bold'),
                 TextColumn::make('arbitration_mode')
-                    ->label('Arbitrage')
+                    ->label('Mode d\'arbitrage')
                     ->badge(),
                 TextColumn::make('quota_places')
-                    ->label('Quota')
+                    ->label('Places')
                     ->alignCenter(),
                 TextColumn::make('min_score')
-                    ->label('Seuil min.')
+                    ->label('Note min.')
                     ->alignCenter()
-                    ->formatStateUsing(fn ($state) => $state ? number_format($state, 2).' / 10' : '-'),
+                    ->formatStateUsing(fn ($state) => $state ? number_format($state, 0).' / 10' : '-'),
                 TextColumn::make('default_sessions_per_week')
-                    ->label('Séances/sem')
+                    ->label('Séances / sem.')
                     ->alignCenter(),
                 TextColumn::make('default_competitions_planned')
                     ->label('Compétitions')
@@ -141,44 +144,50 @@ class GroupResource extends Resource
                     ->color('primary'),
             ])
             ->filters([
-                //
+                SelectFilter::make('arbitration_mode')
+                    ->label('Mode d\'arbitrage')
+                    ->options(ArbitrageMode::class),
             ])
             ->recordActions([
-                Action::make('copy_link')
-                    ->label('Copier lien')
-                    ->icon(Heroicon::OutlinedClipboardDocument)
-                    ->color('gray')
-                    ->action(function (Group $record): void {
-                        Notification::make()
-                            ->title('Lien mobile copié')
-                            ->body($record->getMobileUrl())
-                            ->success()
-                            ->send();
-                    }),
+                ActionGroup::make([
+                    Action::make('copy_link')
+                        ->label('Copier le lien')
+                        ->icon(Heroicon::OutlinedClipboardDocument)
+                        ->color('gray')
+                        ->action(function (Group $record): void {
+                            Notification::make()
+                                ->title('Lien mobile copié')
+                                ->body($record->getMobileUrl())
+                                ->success()
+                                ->send();
+                        }),
 
-                Action::make('whatsapp')
-                    ->label('WhatsApp')
-                    ->icon(Heroicon::OutlinedChatBubbleOvalLeftEllipsis)
-                    ->color('success')
-                    ->url(fn (Group $record): string => $record->getWhatsAppShareUrl())
-                    ->openUrlInNewTab(),
+                    Action::make('whatsapp')
+                        ->label('Relancer sur WhatsApp')
+                        ->icon(Heroicon::OutlinedChatBubbleOvalLeftEllipsis)
+                        ->color('gray')
+                        ->url(fn (Group $record): string => $record->getWhatsAppShareUrl())
+                        ->openUrlInNewTab(),
 
-                Action::make('regenerate_token')
-                    ->label('Régénérer token')
-                    ->icon(Heroicon::OutlinedArrowPath)
-                    ->color('warning')
-                    ->requiresConfirmation()
-                    ->modalHeading('Régénérer le token d\'accès ?')
-                    ->modalDescription('L\'ancien lien partagé aux entraîneurs deviendra immédiatement invalide.')
-                    ->action(function (Group $record): void {
-                        $record->regenerateAccessToken();
-                        Notification::make()
-                            ->title('Nouveau token généré avec succès')
-                            ->success()
-                            ->send();
-                    }),
+                    Action::make('regenerate_token')
+                        ->label('Régénérer le token d\'accès')
+                        ->icon(Heroicon::OutlinedArrowPath)
+                        ->color('gray')
+                        ->requiresConfirmation()
+                        ->modalHeading('Régénérer le token d\'accès ?')
+                        ->modalDescription('L\'ancien lien partagé aux entraîneurs deviendra immédiatement invalide.')
+                        ->action(function (Group $record): void {
+                            $record->regenerateAccessToken();
+                            Notification::make()
+                                ->title('Nouveau token généré avec succès')
+                                ->success()
+                                ->send();
+                        }),
 
-                EditAction::make(),
+                    EditAction::make(),
+                ])
+                    ->icon(Heroicon::EllipsisVertical)
+                    ->tooltip('Actions'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
@@ -190,7 +199,7 @@ class GroupResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            AthletesRelationManager::class,
         ];
     }
 

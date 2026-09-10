@@ -5,9 +5,11 @@ namespace App\Filament\Resources\EvaluationSessions;
 use App\Filament\Resources\EvaluationSessions\Pages\CreateEvaluationSession;
 use App\Filament\Resources\EvaluationSessions\Pages\EditEvaluationSession;
 use App\Filament\Resources\EvaluationSessions\Pages\ListEvaluationSessions;
+use App\Filament\Resources\EvaluationSessions\Pages\ManageEvaluationSessionWorkflow;
 use App\Filament\Resources\EvaluationSessions\RelationManagers\EvaluationsRelationManager;
 use App\Models\EvaluationSession;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -20,6 +22,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 class EvaluationSessionResource extends Resource
@@ -100,9 +103,18 @@ class EvaluationSessionResource extends Resource
                     ->color('primary'),
             ])
             ->filters([
-                //
+                TernaryFilter::make('is_closed')
+                    ->label('État de la session')
+                    ->placeholder('Toutes les sessions')
+                    ->trueLabel('Sessions clôturées')
+                    ->falseLabel('Sessions ouvertes'),
             ])
             ->recordActions([
+                Action::make('workflow')
+                    ->label('Piloter le workflow')
+                    ->icon(Heroicon::OutlinedSparkles)
+                    ->color('primary')
+                    ->url(fn (EvaluationSession $record): string => static::getUrl('workflow', ['record' => $record])),
                 EditAction::make(),
             ])
             ->toolbarActions([
@@ -124,6 +136,7 @@ class EvaluationSessionResource extends Resource
         return [
             'index' => ListEvaluationSessions::route('/'),
             'create' => CreateEvaluationSession::route('/create'),
+            'workflow' => ManageEvaluationSessionWorkflow::route('/{record}/workflow'),
             'edit' => EditEvaluationSession::route('/{record}/edit'),
         ];
     }

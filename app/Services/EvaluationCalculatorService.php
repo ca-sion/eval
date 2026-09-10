@@ -3,8 +3,11 @@
 namespace App\Services;
 
 use App\Enums\ArbitrageMode;
+use App\Enums\AthleteStatus;
 use App\Enums\EvaluationCriterion;
 use App\Enums\EvaluationDecision;
+use App\Enums\EvaluationStatus;
+use App\Models\Athlete;
 use App\Models\Evaluation;
 use App\Models\EvaluationSession;
 use App\Models\Group;
@@ -137,5 +140,120 @@ class EvaluationCalculatorService
         }
 
         return $sorted;
+    }
+
+    /**
+     * Calcule l'état d'avancement complet et les métriques de workflow pour une session donnée.
+     *
+     * @return array<string, mixed>
+     */
+    public function getSessionProgressStats(EvaluationSession $session): array
+    {
+        $evaluations = $session->evaluations()->with(['athlete', 'group'])->get();
+        $totalActiveAthletes = Athlete::where('status', AthleteStatus::Active)->count();
+        $totalEvaluations = $evaluations->count();
+
+        // 1. Métriques de saisie entraîneur (C4, C5, C6, C7, C8)
+        $fullyRatedCount = 0;
+        $totalRatingPoints = 0;
+        $maxPossibleRatingPoints = max(1, $totalEvaluations * 5);
+
+        foreach ($evaluations as $eval) {
+            $ratedCriteria = 0;
+            if ($eval->c4_commitment !== null) {
+                $ratedCriteria++;
+            }
+            if ($eval->c5_behavior !== null) {
+                $ratedCriteria++;
+            }
+            if ($eval->c6_level !== null) {
+                $ratedCriteria++;
+            }
+            if ($eval->c7_progress !== null) {
+                $ratedCriteria++;
+            }
+            if ($eval->c8_environment !== null) {
+                $ratedCriteria++;
+            }
+
+            $totalRatingPoints += $ratedCriteria;
+            if ($ratedCriteria === 5) {
+                $fullyRatedCount++;
+            }
+        }
+
+        $coachProgressPercent = $totalEvaluations > 0
+            ? (int) round(($totalRatingPoints / $maxPossibleRatingPoints) * 100)
+            : 0;
+
+        // 2. Métriques NDS (Présences C1)
+        $ndsSyncedCount = $evaluations->whereNotNull('real_attendances')->count();
+        $ndsProgressPercent = $totalEvaluations > 0
+            ? (int) round(($ndsSyncedCount / $totalEvaluations) * 100)
+            : 0;
+
+        // 3. Métriques d'arbitrage
+        $arbitratedCount = $evaluations->filter(fn (Evaluation $e) => $e->final_score !== null && $e->decision !== null && $e->decision !== EvaluationDecision::Pending)->count();
+        $retainedCount = $evaluations->where('decision', EvaluationDecision::Retained)->count();
+        $probationCount = $evaluations->where('decision', EvaluationDecision::ProbationNeeded)->count();
+        $notRetainedCount = $evaluations->where('decision', EvaluationDecision::NotRetained)->count();
+        $pendingCount = $totalEvaluations - ($retainedCount + $probationCount + $notRetainedCount);
+
+        // 4. Statistiques par groupe
+        $groups = Group::whereHas('evaluations', fn ($q) => $q->where('evaluation_session_id', $session->id))
+            ->orWhereHas('athletes', fn ($q) => $q->where('status', AthleteStatus::Active))
+            ->distinct()
+            ->get();
+
+        $groupStats = [];
+        foreach ($groups as $group) {
+            $groupEvals = $evaluations->where('group_id', $group->id);
+            $groupTotal = $groupEvals->count();
+            $groupRated = $groupEvals->filter(fn (Evaluation $e) => $e->c4_commitment !== null && $e->c5_behavior !== null && $e->c6_level !== null && $e->c7_progress !== null && $e->c8_environment !== null)->count();
+            $groupNds = $groupEvals->whereNotNull('real_attendances')->count();
+            $groupPercent = $groupTotal > 0 ? (int) round(($groupRated / $groupTotal) * 100) : 0;
+            $groupSubmitted = $groupEvals->where('status', EvaluationStatus::Submitted)->count();
+
+            $groupStats[] = [
+                'group' => $group,
+                'total' => $groupTotal,
+                'rated_count' => $groupRated,
+                'nds_count' => $groupNds,
+                'progress_percent' => $groupPercent,
+                'submitted_count' => $groupSubmitted,
+                'retained_count' => $groupEvals->where('decision', EvaluationDecision::Retained)->count(),
+                'probation_count' => $groupEvals->where('decision', EvaluationDecision::ProbationNeeded)->count(),
+                'not_retained_count' => $groupEvals->where('decision', EvaluationDecision::NotRetained)->count(),
+                'mobile_url' => $group->getMobileUrl(),
+                'whatsapp_url' => $group->getWhatsAppShareUrl(),
+            ];
+        }
+
+        // Taux global de complétion de la session
+        $globalProgress = 0;
+        if ($totalEvaluations > 0) {
+            // Poids : Initialisation (20%), Saisie Coach (40%), NDS (20%), Arbitrage (20%)
+            $initScore = ($totalEvaluations >= $totalActiveAthletes && $totalActiveAthletes > 0) ? 20 : 10;
+            $coachScore = (int) round(($coachProgressPercent / 100) * 40);
+            $ndsScore = (int) round(($ndsProgressPercent / 100) * 20);
+            $arbitrageScore = $totalEvaluations > 0 ? (int) round(($arbitratedCount / $totalEvaluations) * 20) : 0;
+            $globalProgress = min(100, $initScore + $coachScore + $ndsScore + $arbitrageScore);
+        }
+
+        return [
+            'total_active_athletes' => $totalActiveAthletes,
+            'total_evaluations' => $totalEvaluations,
+            'fully_rated_count' => $fullyRatedCount,
+            'coach_progress_percent' => $coachProgressPercent,
+            'nds_synced_count' => $ndsSyncedCount,
+            'nds_progress_percent' => $ndsProgressPercent,
+            'arbitrated_count' => $arbitratedCount,
+            'retained_count' => $retainedCount,
+            'probation_count' => $probationCount,
+            'not_retained_count' => $notRetainedCount,
+            'pending_count' => $pendingCount,
+            'global_progress' => $globalProgress,
+            'groups_stats' => $groupStats,
+        ];
     }
 }

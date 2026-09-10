@@ -23,13 +23,13 @@ class ListAthletes extends ListRecords
     {
         return [
             'all' => Tab::make('Tous'),
-            'active' => Tab::make('Actifs')
+            'active' => Tab::make(AthleteStatus::Active->getLabel())
                 ->modifyQueryUsing(fn ($query) => $query->where('status', AthleteStatus::Active)),
-            'adaptation' => Tab::make('En adaptation')
+            'adaptation' => Tab::make(AthleteStatus::Adaptation->getLabel())
                 ->modifyQueryUsing(fn ($query) => $query->where('status', AthleteStatus::Adaptation)),
-            'probation' => Tab::make('En sursis')
+            'probation' => Tab::make(AthleteStatus::Probation->getLabel())
                 ->modifyQueryUsing(fn ($query) => $query->where('status', AthleteStatus::Probation)),
-            'inactive' => Tab::make('Inactifs')
+            'inactive' => Tab::make(AthleteStatus::Inactive->getLabel())
                 ->modifyQueryUsing(fn ($query) => $query->where('status', AthleteStatus::Inactive)),
         ];
     }

@@ -1,156 +1,81 @@
 <?php
 
-namespace App\Filament\Resources\Athletes;
+namespace App\Filament\Resources\Groups\RelationManagers;
 
 use App\Enums\AthleteStatus;
 use App\Enums\EvaluationContext;
-use App\Filament\Resources\Athletes\Pages\CreateAthlete;
-use App\Filament\Resources\Athletes\Pages\EditAthlete;
-use App\Filament\Resources\Athletes\Pages\ListAthletes;
-use App\Filament\Resources\Athletes\RelationManagers\EvaluationsRelationManager;
 use App\Models\Athlete;
 use App\Models\Evaluation;
 use App\Models\Group;
-use BackedEnum;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\Checkbox;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
-use Filament\Resources\Resource;
-use Filament\Schemas\Components\Section;
+use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
 
-class AthleteResource extends Resource
+class AthletesRelationManager extends RelationManager
 {
-    protected static ?string $model = Athlete::class;
+    protected static string $relationship = 'athletes';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUser;
+    protected static ?string $title = 'Athlètes membres du groupe';
 
-    protected static ?string $modelLabel = 'Athlète';
-
-    protected static ?string $pluralModelLabel = 'Athlètes';
-
-    protected static ?int $navigationSort = 2;
-
-    public static function form(Schema $schema): Schema
+    public function form(Schema $schema): Schema
     {
-        return $schema
-            ->columns(1)
-            ->components([
-                Section::make('Identité de l\'athlète')
-                    ->columns(2)
-                    ->schema([
-                        TextInput::make('last_name')
-                            ->label('Nom')
-                            ->required()
-                            ->maxLength(255),
-                        TextInput::make('first_name')
-                            ->label('Prénom')
-                            ->required()
-                            ->maxLength(255),
-                        TextInput::make('birth_year')
-                            ->label('Année de naissance')
-                            ->numeric()
-                            ->required()
-                            ->minValue(1980)
-                            ->maxValue((int) date('Y')),
-                        Select::make('group_id')
-                            ->label('Groupe d\'entraînement')
-                            ->relationship('group', 'name')
-                            ->searchable()
-                            ->preload()
-                            ->required(),
-                        Select::make('status')
-                            ->label('Statut')
-                            ->options(AthleteStatus::class)
-                            ->required()
-                            ->default(AthleteStatus::Active),
-                    ]),
-
-                Section::make('Période d\'adaptation (nouveaux arrivants)')
-                    ->visibleOn('create')
-                    ->schema([
-                        Checkbox::make('start_adaptation')
-                            ->label('Démarrer une période d\'adaptation de 5 semaines (art. 3.4 et 10.2)')
-                            ->helperText('Crée automatiquement une évaluation individuelle active de 5 semaines et place l\'athlète en statut adaptation')
-                            ->default(false),
-                    ]),
-
-                Section::make('Identifiants externes')
-                    ->columns(3)
-                    ->schema([
-                        TextInput::make('license_number')
-                            ->label('N° de licence Swiss Athletics')
-                            ->nullable(),
-                        TextInput::make('tiiva_id')
-                            ->label('Identifiant Tiiva')
-                            ->nullable(),
-                        TextInput::make('nds_number')
-                            ->label('N° NDS Jeunesse+Sport')
-                            ->nullable(),
-                    ]),
-            ]);
+        return $schema->components([
+            // Form handled by main athlete editor
+        ]);
     }
 
-    public static function table(Table $table): Table
+    public function table(Table $table): Table
     {
         return $table
+            ->recordTitleAttribute('last_name')
+            ->defaultSort('last_name', 'asc')
             ->columns([
                 TextColumn::make('last_name')
                     ->label('Nom')
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
+
                 TextColumn::make('first_name')
                     ->label('Prénom')
                     ->searchable()
                     ->sortable(),
+
                 TextColumn::make('birth_year')
                     ->label('Année')
-                    ->sortable()
-                    ->alignCenter(),
-                TextColumn::make('group.name')
-                    ->label('Groupe')
-                    ->searchable()
-                    ->sortable()
-                    ->badge()
-                    ->color('info'),
+                    ->alignCenter()
+                    ->sortable(),
+
                 TextColumn::make('status')
                     ->label('Statut')
                     ->badge()
                     ->sortable(),
+
                 TextColumn::make('license_number')
                     ->label('Licence')
-                    ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('tiiva_id')
-                    ->label('ID Tiiva')
-                    ->toggleable(isToggledHiddenByDefault: true),
+
                 TextColumn::make('nds_number')
                     ->label('N° NDS')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('group_id')
-                    ->label('Groupe d\'entraînement')
-                    ->relationship('group', 'name')
-                    ->searchable()
-                    ->preload(),
-
                 SelectFilter::make('status')
                     ->label('Statut')
                     ->options(AthleteStatus::class),
@@ -212,11 +137,12 @@ class AthleteResource extends Resource
                                 ->send();
                         }),
 
+                    ViewAction::make(),
                     EditAction::make(),
                 ])
                     ->icon(Heroicon::EllipsisVertical)
                     ->tooltip('Actions'),
-            ])
+            ], position: RecordActionsPosition::BeforeCells)
             ->toolbarActions([
                 BulkActionGroup::make([
                     BulkAction::make('move_group')
@@ -240,25 +166,7 @@ class AthleteResource extends Resource
                                 ->success()
                                 ->send();
                         }),
-
-                    DeleteBulkAction::make(),
                 ]),
             ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            EvaluationsRelationManager::class,
-        ];
-    }
-
-    public static function getPages(): array
-    {
-        return [
-            'index' => ListAthletes::route('/'),
-            'create' => CreateAthlete::route('/create'),
-            'edit' => EditAthlete::route('/{record}/edit'),
-        ];
     }
 }
