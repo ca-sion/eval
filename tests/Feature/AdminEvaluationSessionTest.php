@@ -267,3 +267,12 @@ test('interview_pdf table action and export_pdf_comite work through Livewire wit
         ->assertSuccessful()
         ->callAction('export_pdf_comite');
 });
+
+test('admin can access profile page to edit credentials and change password', function () {
+    $admin = User::factory()->create(['email' => 'techlead_profile@casion.ch', 'password' => 'oldpassword']);
+
+    $this->actingAs($admin)
+        ->get('/admin/profile')
+        ->assertStatus(200)
+        ->assertSee('techlead_profile@casion.ch');
+});
