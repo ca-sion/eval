@@ -111,7 +111,7 @@ class ManageEvaluationSessionWorkflow extends Page
             ->color('primary')
             ->requiresConfirmation()
             ->modalHeading('Synchroniser groupes, athlètes et responsables légaux depuis Tiiva ?')
-            ->modalDescription('Cette action interroge l\'API officielle de Tiiva, met à jour les effectifs, enregistre les responsables légaux pour le bénévolat et prépare les fiches d\'évaluation.')
+            ->modalDescription('Cette action interroge l\'API officielle de Tiiva, met à jour les effectifs, enregistre les responsables légaux pour le bénévolat et prépare les évaluations.')
             ->action(function (): void {
                 try {
                     $api = app(TiivaApiService::class);
@@ -129,7 +129,7 @@ class ManageEvaluationSessionWorkflow extends Page
 
                     Notification::make()
                         ->title('Synchronisation Tiiva réussie')
-                        ->body("{$result['groups_synced']} groupes analysés • {$result['athletes_synced']} athlètes synchronisés ({$result['athletes_created']} créés, {$result['athletes_updated']} màj) • {$result['evaluations_created']} fiches créées.")
+                        ->body("{$result['groups_synced']} groupes analysés • {$result['athletes_synced']} athlètes synchronisés ({$result['athletes_created']} créés, {$result['athletes_updated']} màj) • {$result['evaluations_created']} évaluations créées.")
                         ->success()
                         ->send();
                 } catch (\Throwable $e) {
@@ -148,12 +148,12 @@ class ManageEvaluationSessionWorkflow extends Page
     public function getInitializeEvaluationsAction(): Action
     {
         return Action::make('initialize_evaluations')
-            ->label('Initialiser les fiches de la session')
+            ->label('Initialiser les évaluations de la session')
             ->icon(Heroicon::OutlinedSparkles)
             ->color('gray')
             ->requiresConfirmation()
             ->modalHeading('Générer les évaluations pour tous les athlètes actifs ?')
-            ->modalDescription('Une fiche d\'évaluation collective sera créée pour chaque athlète actif dans son groupe d\'entraînement actuel.')
+            ->modalDescription('Une évaluation collective sera créée pour chaque athlète actif dans son groupe d\'entraînement actuel.')
             ->action(function (): void {
                 $session = $this->record;
                 $athletesQuery = Athlete::whereIn('status', [AthleteStatus::Active, AthleteStatus::Adaptation])->with('group');
@@ -200,8 +200,8 @@ class ManageEvaluationSessionWorkflow extends Page
                 }
 
                 $msg = $createdCount > 0
-                    ? "{$createdCount} nouvelles fiches créées ({$updatedCount} fiches existantes synchronisées)."
-                    : "{$updatedCount} fiches existantes synchronisées avec les dates de la session.";
+                    ? "{$createdCount} nouvelles évaluations créées ({$updatedCount} évaluations existantes synchronisées)."
+                    : "{$updatedCount} évaluations existantes synchronisées avec les dates de la session.";
 
                 Notification::make()
                     ->title('Initialisation et synchronisation terminées')

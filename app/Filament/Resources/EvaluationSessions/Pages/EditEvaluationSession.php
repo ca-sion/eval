@@ -45,10 +45,17 @@ class EditEvaluationSession extends EditRecord
                 ->icon(Heroicon::OutlinedSparkles)
                 ->color('gray')
                 ->requiresConfirmation()
-                ->modalHeading('Générer les évaluations pour tous les athlètes actifs ?')
-                ->modalDescription('Une fiche d\'évaluation collective sera créée pour chaque athlète actif dans son groupe d\'entraînement actuel.')
+                ->modalHeading('Générer les évaluations pour les athlètes actifs ?')
+                ->modalDescription('Une évaluation sera créée pour chaque athlète actif dans son groupe d\'entraînement.')
                 ->action(function () use ($session): void {
-                    $athletes = Athlete::whereIn('status', [AthleteStatus::Active, AthleteStatus::Adaptation])->with('group')->get();
+                    $hasTargetedGroups = $session->groups()->exists();
+                    $targetedGroupIds = $hasTargetedGroups ? $session->groups()->pluck('groups.id')->toArray() : [];
+
+                    $athletesQuery = Athlete::whereIn('status', [AthleteStatus::Active, AthleteStatus::Adaptation])->with('group');
+                    if ($hasTargetedGroups) {
+                        $athletesQuery->whereIn('group_id', $targetedGroupIds);
+                    }
+                    $athletes = $athletesQuery->get();
                     $createdCount = 0;
                     $updatedCount = 0;
 
@@ -88,8 +95,8 @@ class EditEvaluationSession extends EditRecord
                     }
 
                     $msg = $createdCount > 0
-                        ? "{$createdCount} nouvelles fiches créées ({$updatedCount} fiches existantes synchronisées)."
-                        : "{$updatedCount} fiches existantes synchronisées avec les dates de la session.";
+                        ? "{$createdCount} nouvelles évaluations créées ({$updatedCount} évaluations existantes synchronisées)."
+                        : "{$updatedCount} évaluations existantes synchronisées avec les dates de la session.";
 
                     Notification::make()
                         ->title('Initialisation et synchronisation terminées')

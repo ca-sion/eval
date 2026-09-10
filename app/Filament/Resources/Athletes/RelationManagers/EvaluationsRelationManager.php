@@ -84,10 +84,10 @@ class EvaluationsRelationManager extends RelationManager
             ->recordActions([
                 ActionGroup::make([
                     Action::make('interview_pdf')
-                        ->label('Fiche PDF')
+                        ->label('Bilan PDF')
                         ->icon(Heroicon::OutlinedDocumentArrowDown)
                         ->color('gray')
-                        ->tooltip('Télécharger la fiche d\'entretien (PDF)')
+                        ->tooltip('Télécharger le bilan d\'évaluation individuel (PDF)')
                         ->url(fn (Evaluation $record) => route('evaluations.pdf', $record))
                         ->openUrlInNewTab(),
 
@@ -129,27 +129,27 @@ class EvaluationsRelationManager extends RelationManager
                         }),
 
                     Action::make('validate_athlete')
-                        ->label('Valider définitivement (art. 10)')
+                        ->label('Valider l\'admission ou le maintien (art. 10.4)')
                         ->icon(Heroicon::OutlinedCheckCircle)
                         ->color('gray')
                         ->requiresConfirmation()
-                        ->modalHeading('Valider l\'admission définitive de l\'athlète ?')
+                        ->modalHeading('Valider l\'admission définitive ou le maintien de l\'athlète ?')
                         ->visible(fn (Evaluation $record) => in_array($record->context, [EvaluationContext::Adaptation, EvaluationContext::EvaluationProbation, EvaluationContext::DisciplinaryProbation]))
                         ->action(function (Evaluation $record): void {
                             $record->athlete->update(['status' => AthleteStatus::Active]);
                             Notification::make()
-                                ->title('Athlète validé définitivement')
+                                ->title('Admission ou maintien validé')
                                 ->body("{$record->athlete->full_name} est désormais membre actif.")
                                 ->success()
                                 ->send();
                         }),
 
                     Action::make('exclude_athlete')
-                        ->label('Non-admission ou exclusion (art. 27)')
+                        ->label('Non-admission ou exclusion (art. 10.5 / 27)')
                         ->icon(Heroicon::OutlinedXCircle)
                         ->color('danger')
                         ->requiresConfirmation()
-                        ->modalHeading('Prononcer la non-admission ou exclusion ?')
+                        ->modalHeading('Prononcer la non-admission ou l\'exclusion ?')
                         ->modalDescription('L\'athlète passera en statut inactif. Le motif sera consigné pour le Comité.')
                         ->visible(fn (Evaluation $record) => in_array($record->context, [EvaluationContext::Adaptation, EvaluationContext::EvaluationProbation, EvaluationContext::DisciplinaryProbation]))
                         ->action(function (Evaluation $record): void {

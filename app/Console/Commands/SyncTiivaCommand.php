@@ -49,7 +49,7 @@ class SyncTiivaCommand extends Command
                 ['Nouveaux athlètes créés (Adaptation)', $result['athletes_created']],
                 ['Athlètes mis à jour', $result['athletes_updated']],
                 ['Athlètes désactivés (plus dans un groupe actif)', $result['athletes_deactivated']],
-                ['Fiches d\'évaluation créées', $result['evaluations_created']],
+                ['Évaluations créées', $result['evaluations_created']],
             ]
         );
 

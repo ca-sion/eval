@@ -56,7 +56,7 @@
                 <span>Étape 1 : Initialisation et effectifs</span>
                 @if($stats['total_evaluations'] > 0)
                     <x-filament::badge color="success">
-                        {{ $stats['total_evaluations'] }} fiches actives
+                        {{ $stats['total_evaluations'] }} évaluations actives
                     </x-filament::badge>
                 @else
                     <x-filament::badge color="warning">
@@ -67,7 +67,7 @@
         </x-slot>
 
         <x-slot name="description">
-            Générez les fiches d'évaluation pour tous les athlètes actifs du club ou synchronisez directement depuis l'API Tiiva.
+            Générez les évaluations pour tous les athlètes actifs du club ou synchronisez directement depuis l'API Tiiva.
             @if($record->last_tiiva_synced_at)
                 <span class="inline-block mt-1 text-xs text-gray-500 dark:text-gray-400">
                     · Dernière synchronisation Tiiva : {{ $record->last_tiiva_synced_at->format('d.m.Y à H:i') }}
@@ -90,7 +90,7 @@
                 <div style="font-size: 1.25rem; font-weight: 700; margin-top: 2px;">{{ $stats['total_active_athletes'] }}</div>
             </div>
             <div style="padding: 12px; background: rgba(156, 163, 175, 0.08); border-radius: 8px; border: 1px solid rgba(156, 163, 175, 0.15);">
-                <div style="font-size: 0.75rem; opacity: 0.7;">Fiches créées pour la session</div>
+                <div style="font-size: 0.75rem; opacity: 0.7;">Évaluations créées pour la session</div>
                 <div style="font-size: 1.25rem; font-weight: 700; margin-top: 2px;">{{ $stats['total_evaluations'] }}</div>
             </div>
             <div style="padding: 12px; background: rgba(156, 163, 175, 0.08); border-radius: 8px; border: 1px solid rgba(156, 163, 175, 0.15);">

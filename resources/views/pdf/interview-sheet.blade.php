@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <title>Fiche d'entretien - {{ $evaluation->athlete->full_name }}</title>
+    <title>Bilan individuel d'évaluation - {{ $evaluation->athlete->full_name }}</title>
     <style>
         body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; color: #1e293b; line-height: 1.4; margin: 20px; }
         .header { border-bottom: 2px solid #dc2626; padding-bottom: 12px; margin-bottom: 15px; }
@@ -30,7 +30,7 @@
             <tr>
                 <td>
                     <div class="title">CA Sion</div>
-                    <div class="subtitle">Fiche individuelle d'entretien et d'évaluation • Statuts Art. 3, 10 et 27</div>
+                    <div class="subtitle">Bilan individuel d'évaluation • Règlement art. 3, 10 et 27</div>
                 </td>
                 <td style="text-align: right;">
                     <div style="font-size: 14px; font-weight: bold; color: #dc2626;">{{ $evaluation->group->name }}</div>

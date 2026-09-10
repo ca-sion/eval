@@ -10,7 +10,7 @@ use Illuminate\Http\Response;
 class PdfReportController extends Controller
 {
     /**
-     * Affiche le flux PDF de la fiche individuelle d'entretien.
+     * Affiche le flux PDF du bilan individuel d'évaluation.
      */
     public function interviewReport(Evaluation $evaluation, PdfReportService $pdfService): Response
     {

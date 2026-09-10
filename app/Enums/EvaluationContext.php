@@ -25,10 +25,10 @@ enum EvaluationContext: string implements HasColor, HasLabel
     public function getLabel(): ?string
     {
         return match ($this) {
-            self::Collective => 'Période d\'évaluation',
-            self::Adaptation => 'Période d\'adaptation (Art. 3.4 et 10.2)',
-            self::EvaluationProbation => 'Sursis probatoire de sélection (Art. 10.5)',
-            self::DisciplinaryProbation => 'Sursis disciplinaire (Art. 27.1)',
+            self::Collective => 'Session d\'évaluation (art. 10.2)',
+            self::Adaptation => 'Période d\'adaptation (art. 3.4 et 10.2)',
+            self::EvaluationProbation => 'Sursis probatoire (art. 10.5)',
+            self::DisciplinaryProbation => 'Mise à l\'épreuve disciplinaire (art. 27.1)',
         };
     }
 

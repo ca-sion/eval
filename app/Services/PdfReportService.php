@@ -12,7 +12,7 @@ use Illuminate\Http\Response;
 class PdfReportService
 {
     /**
-     * Génère et diffuse le flux PDF de la fiche d'entretien individuelle.
+     * Génère et diffuse le flux PDF du bilan individuel d'évaluation.
      */
     public function generateInterviewReport(Evaluation $evaluation): Response
     {
@@ -23,7 +23,7 @@ class PdfReportService
         ])->setPaper('a4', 'portrait');
 
         $fileName = sprintf(
-            'fiche-entretien-%s-%s.pdf',
+            'bilan-evaluation-%s-%s.pdf',
             str($evaluation->athlete->last_name)->slug('_', 'fr'),
             $evaluation->start_date ? $evaluation->start_date->format('Ym') : date('Ym')
         );

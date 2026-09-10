@@ -158,7 +158,7 @@ class AthleteResource extends Resource
             ->recordActions([
                 ActionGroup::make([
                     Action::make('disciplinary_probation')
-                        ->label('Sursis disciplinaire (art. 27)')
+                        ->label('Mise à l\'épreuve disciplinaire (art. 27.1)')
                         ->icon(Heroicon::OutlinedExclamationTriangle)
                         ->color('gray')
                         ->form([
@@ -174,14 +174,16 @@ class AthleteResource extends Resource
                         ->action(function (Athlete $record, array $data): void {
                             $group = $record->group;
                             $startDate = Carbon::parse($data['start_date']);
+                            $weeksCount = (int) config('evaluation.durations.disciplinary_probation_weeks', 2);
+                            $endDate = $startDate->copy()->addWeeks($weeksCount);
 
                             Evaluation::create([
                                 'athlete_id' => $record->id,
                                 'group_id' => $record->group_id,
                                 'context' => EvaluationContext::DisciplinaryProbation,
                                 'start_date' => $startDate,
-                                'end_date' => $startDate->copy()->addDays(14),
-                                'weeks_count' => 2,
+                                'end_date' => $endDate,
+                                'weeks_count' => $weeksCount,
                                 'sessions_per_week' => $group?->default_sessions_per_week ?? 3,
                                 'competitions_planned' => $group?->default_competitions_planned ?? 6,
                                 'coach_notes' => $data['reason'],
@@ -190,23 +192,23 @@ class AthleteResource extends Resource
                             $record->update(['status' => AthleteStatus::Probation]);
 
                             Notification::make()
-                                ->title('Sursis disciplinaire déclenché (2 semaines)')
-                                ->body("Période d'observation enregistrée pour {$record->full_name}.")
+                                ->title("Mise à l'épreuve disciplinaire déclenchée ({$weeksCount} semaines)")
+                                ->body("Période d'observation enregistrée pour {$record->full_name} jusqu'au ".$endDate->format('d.m.Y').'.')
                                 ->warning()
                                 ->send();
                         }),
 
                     Action::make('validate_athlete')
-                        ->label('Valider définitivement (art. 10)')
+                        ->label('Valider l\'admission ou le maintien (art. 10.4)')
                         ->icon(Heroicon::OutlinedCheckCircle)
                         ->color('gray')
                         ->visible(fn (Athlete $record) => in_array($record->status, [AthleteStatus::Adaptation, AthleteStatus::Probation]))
                         ->requiresConfirmation()
-                        ->modalHeading('Valider l\'admission définitive ?')
+                        ->modalHeading('Valider l\'admission définitive ou le maintien de l\'athlète ?')
                         ->action(function (Athlete $record): void {
                             $record->update(['status' => AthleteStatus::Active]);
                             Notification::make()
-                                ->title('Athlète validé définitivement')
+                                ->title('Admission ou maintien validé')
                                 ->body("{$record->full_name} est désormais membre actif.")
                                 ->success()
                                 ->send();

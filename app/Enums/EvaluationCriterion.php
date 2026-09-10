@@ -75,7 +75,7 @@ enum EvaluationCriterion: string implements HasColor, HasDescription, HasLabel
     }
 
     /**
-     * Directive opérationnelle et description détaillée (affichée en infobulle et fiche PDF).
+     * Directive opérationnelle et description détaillée (affichée en infobulle et bilan PDF).
      */
     public function getDescription(): string
     {

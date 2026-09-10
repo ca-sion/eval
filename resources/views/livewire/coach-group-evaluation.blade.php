@@ -166,7 +166,7 @@
                                     type="button"
                                     wire:click="toggleStatus({{ $eval->id }})"
                                     class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-xs font-bold transition-all duration-150 bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200 shadow-xs whitespace-nowrap"
-                                    title="Cliquer pour verrouiller / transmettre la fiche"
+                                    title="Cliquer pour verrouiller / transmettre l'évaluation"
                                 >
                                     <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
                                     <span>Brouillon</span>
@@ -184,7 +184,7 @@
                                     <svg class="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
                                     </svg>
-                                    <span>Fiche transmise et verrouillée. Cliquez sur « Déverrouiller » ci-dessus pour modifier les notes ou retards.</span>
+                                    <span>Évaluation transmise et verrouillée. Cliquez sur « Déverrouiller » ci-dessus pour modifier les notes ou retards.</span>
                                 </div>
                                 <button
                                     type="button"
