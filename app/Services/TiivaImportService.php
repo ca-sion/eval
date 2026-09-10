@@ -75,7 +75,12 @@ class TiivaImportService
                 if ($rawBirth instanceof \DateTimeInterface) {
                     $birthYear = (int) $rawBirth->format('Y');
                 } elseif (is_numeric($rawBirth)) {
-                    $birthYear = (int) $rawBirth;
+                    if ($rawBirth > 30000 && $rawBirth < 60000) {
+                        $timestamp = (int) (($rawBirth - 25569) * 86400);
+                        $birthYear = (int) gmdate('Y', $timestamp);
+                    } else {
+                        $birthYear = (int) $rawBirth;
+                    }
                 } elseif (is_string($rawBirth) && preg_match('/(\d{4})/', $rawBirth, $m)) {
                     $birthYear = (int) $m[1];
                 }

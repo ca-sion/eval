@@ -24,6 +24,8 @@ class Group extends Model
             'min_score' => 'float',
             'max_volunteering_age' => 'integer',
             'required_volunteering_count' => 'integer',
+            'is_training_group' => 'boolean',
+            'order' => 'integer',
         ];
     }
 
@@ -31,7 +33,14 @@ class Group extends Model
     {
         static::creating(function (Group $group): void {
             if (empty($group->slug)) {
-                $group->slug = Str::slug($group->name);
+                $baseSlug = Str::slug($group->name) ?: 'groupe';
+                $slug = $baseSlug;
+                $count = 2;
+                while (static::where('slug', $slug)->exists()) {
+                    $slug = "{$baseSlug}-{$count}";
+                    $count++;
+                }
+                $group->slug = $slug;
             }
 
             if (empty($group->access_token)) {

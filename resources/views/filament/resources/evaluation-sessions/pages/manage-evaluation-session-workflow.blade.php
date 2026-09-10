@@ -61,11 +61,17 @@
         </x-slot>
 
         <x-slot name="description">
-            Générez les fiches d'évaluation pour tous les athlètes actifs du club ou importez la liste depuis Tiiva.
+            Générez les fiches d'évaluation pour tous les athlètes actifs du club ou synchronisez directement depuis l'API Tiiva.
+            @if($record->last_tiiva_synced_at)
+                <span class="inline-block mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    · Dernière synchronisation Tiiva : {{ $record->last_tiiva_synced_at->format('d.m.Y à H:i') }}
+                </span>
+            @endif
         </x-slot>
 
         <x-slot name="afterHeader">
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                {{ $this->getAction('sync_tiiva_api') }}
                 {{ $this->getAction('initialize_evaluations') }}
                 {{ $this->getAction('import_tiiva') }}
             </div>
@@ -74,7 +80,7 @@
         {{-- Métriques Étape 1 --}}
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-top: 8px;">
             <div style="padding: 12px; background: rgba(156, 163, 175, 0.08); border-radius: 8px; border: 1px solid rgba(156, 163, 175, 0.15);">
-                <div style="font-size: 0.75rem; opacity: 0.7;">Athlètes actifs du club</div>
+                <div style="font-size: 0.75rem; opacity: 0.7;">Athlètes actifs</div>
                 <div style="font-size: 1.25rem; font-weight: 700; margin-top: 2px;">{{ $stats['total_active_athletes'] }}</div>
             </div>
             <div style="padding: 12px; background: rgba(156, 163, 175, 0.08); border-radius: 8px; border: 1px solid rgba(156, 163, 175, 0.15);">
@@ -180,7 +186,7 @@
     </x-filament::section>
 
     {{-- ======================================================== --}}
-    {{-- ÉTAPE 3 : Données NDS et présences Jeunesse+Sport --}}
+    {{-- ÉTAPE 3 : Données NDS et bénévolats des parents --}}
     {{-- ======================================================== --}}
     <x-filament::section
         icon="heroicon-o-document-check"
@@ -188,7 +194,7 @@
     >
         <x-slot name="heading">
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <span>Étape 3 : Données NDS et présences Jeunesse+Sport</span>
+                <span>Étape 3 : Présences NDS et bénévolats</span>
                 <x-filament::badge color="{{ $stats['nds_progress_percent'] >= 100 ? 'success' : 'gray' }}">
                     {{ $stats['nds_synced_count'] }} / {{ $stats['total_evaluations'] }} présences ({{ $stats['nds_progress_percent'] }}%)
                 </x-filament::badge>
@@ -196,12 +202,13 @@
         </x-slot>
 
         <x-slot name="description">
-            Téléversez le classeur officiel NDS Jeunesse+Sport (.xlsx) pour calculer automatiquement le critère C1 (Assiduité).
+            Importez le classeur officiel NDS Jeunesse+Sport (.xlsx) pour calculer C1 (Assiduité) et la matrice de participations Tiiva pour C9 (Bénévolat des responsables légaux).
         </x-slot>
 
         <x-slot name="afterHeader">
-            <div>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                 {{ $this->getAction('import_nds') }}
+                {{ $this->getAction('import_volunteering') }}
             </div>
         </x-slot>
     </x-filament::section>

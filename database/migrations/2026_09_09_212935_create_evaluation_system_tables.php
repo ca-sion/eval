@@ -23,19 +23,28 @@ return new class extends Migration
             $table->decimal('min_score', 4, 2)->nullable()->default(6.50);
             $table->unsignedInteger('max_volunteering_age')->default(14);
             $table->unsignedInteger('required_volunteering_count')->default(2);
-            $table->string('tiiva_id')->nullable();
+            $table->string('tiiva_id')->nullable()->index();
+            $table->string('color')->nullable();
+            $table->integer('order')->nullable()->default(0);
+            $table->boolean('is_training_group')->default(true);
             $table->timestamps();
         });
 
         Schema::create('athletes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('group_id')->constrained('groups')->cascadeOnDelete();
+            $table->foreignId('group_id')->nullable()->constrained('groups')->nullOnDelete();
             $table->string('first_name');
             $table->string('last_name');
-            $table->unsignedInteger('birth_year');
+            $table->unsignedInteger('birth_year')->nullable();
+            $table->date('birthday')->nullable();
+            $table->string('gender')->nullable();
+            $table->string('email')->nullable();
+            $table->string('phone')->nullable();
+            $table->date('entry_date')->nullable();
             $table->string('license_number')->nullable();
-            $table->string('tiiva_id')->nullable();
-            $table->string('nds_number')->nullable();
+            $table->string('tiiva_id')->nullable()->index();
+            $table->string('nds_number')->nullable()->index();
+            $table->json('guardian_tiiva_ids')->nullable();
             $table->string('status')->default('active');
             $table->timestamps();
 
@@ -49,6 +58,7 @@ return new class extends Migration
             $table->date('end_date');
             $table->unsignedInteger('weeks_count')->default(5);
             $table->boolean('is_closed')->default(false);
+            $table->timestamp('last_tiiva_synced_at')->nullable();
             $table->timestamps();
         });
 

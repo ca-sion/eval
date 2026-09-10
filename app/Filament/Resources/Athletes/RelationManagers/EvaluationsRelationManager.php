@@ -12,10 +12,12 @@ use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Table;
@@ -29,7 +31,10 @@ class EvaluationsRelationManager extends RelationManager
     public function form(Schema $schema): Schema
     {
         return $schema->components([
-            // Form handled by main session evaluations editor
+            Select::make('context')
+                ->options(EvaluationContext::class)
+                ->required()
+                ->label('Contexte d\'évaluation'),
         ]);
     }
 
@@ -45,9 +50,10 @@ class EvaluationsRelationManager extends RelationManager
                     ->weight('bold')
                     ->searchable(),
 
-                TextColumn::make('context')
+                SelectColumn::make('context')
                     ->label('Contexte')
-                    ->badge(),
+                    ->options(EvaluationContext::class)
+                    ->rules(['required']),
 
                 TextColumn::make('start_date')
                     ->label('Début')

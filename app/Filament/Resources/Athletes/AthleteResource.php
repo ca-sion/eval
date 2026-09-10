@@ -241,6 +241,27 @@ class AthleteResource extends Resource
                                 ->send();
                         }),
 
+                    BulkAction::make('change_status')
+                        ->label('Définir le statut')
+                        ->icon(Heroicon::OutlinedSparkles)
+                        ->form([
+                            Select::make('status')
+                                ->label('Nouveau statut de l\'athlète')
+                                ->options(AthleteStatus::class)
+                                ->required(),
+                        ])
+                        ->action(function (Collection $records, array $data): void {
+                            foreach ($records as $record) {
+                                $record->update(['status' => $data['status']]);
+                            }
+
+                            Notification::make()
+                                ->title('Statuts mis à jour')
+                                ->body("{$records->count()} athlètes ont été mis à jour.")
+                                ->success()
+                                ->send();
+                        }),
+
                     DeleteBulkAction::make(),
                 ]),
             ]);

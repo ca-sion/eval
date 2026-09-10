@@ -20,7 +20,19 @@ class Athlete extends Model
         return [
             'status' => AthleteStatus::class,
             'birth_year' => 'integer',
+            'birthday' => 'date',
+            'entry_date' => 'date',
+            'guardian_tiiva_ids' => 'array',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (Athlete $athlete): void {
+            if ($athlete->birthday && ! $athlete->birth_year) {
+                $athlete->birth_year = (int) $athlete->birthday->format('Y');
+            }
+        });
     }
 
     public function group(): BelongsTo

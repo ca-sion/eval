@@ -48,7 +48,7 @@ enum EvaluationContext: string implements HasColor, HasLabel
         return match ($this) {
             self::Collective => 'Eval.',
             self::Adaptation => 'Adapt.',
-            self::EvaluationProbation => 'Eval.',
+            self::EvaluationProbation => 'Sursis',
             self::DisciplinaryProbation => 'Sursis',
         };
     }

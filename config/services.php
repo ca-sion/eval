@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'tiiva' => [
+        'url' => env('TIIVA_API_URL', 'https://tiiva.ch/api'),
+        'token' => env('TIIVA_API_TOKEN'),
+    ],
+
 ];

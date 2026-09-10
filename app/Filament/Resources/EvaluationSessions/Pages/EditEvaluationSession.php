@@ -12,7 +12,9 @@ use App\Models\Group;
 use App\Services\EvaluationCalculatorService;
 use App\Services\ExcelExportService;
 use App\Services\NdsImportService;
+use App\Services\TiivaApiService;
 use App\Services\TiivaImportService;
+use App\Services\VolunteerImportService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
@@ -100,8 +102,76 @@ class EditEvaluationSession extends EditRecord
                 }),
 
             ActionGroup::make([
+                Action::make('sync_tiiva_api')
+                    ->label('Synchroniser via l\'API Tiiva')
+                    ->icon(Heroicon::OutlinedCloudArrowDown)
+                    ->color('primary')
+                    ->requiresConfirmation()
+                    ->modalHeading('Synchroniser groupes et athlètes depuis Tiiva ?')
+                    ->modalDescription('Cette action contacte directement l\'API REST de Tiiva pour mettre à jour les groupes d\'entraînement, les athlètes actifs et leurs liaisons avec les responsables légaux.')
+                    ->action(function () use ($session): void {
+                        $apiService = app(TiivaApiService::class);
+                        $result = $apiService->syncAll($session);
+
+                        if (! ($result['success'] ?? false)) {
+                            Notification::make()
+                                ->title('Échec de la synchronisation API Tiiva')
+                                ->body($result['error'] ?? 'Erreur inconnue')
+                                ->danger()
+                                ->send();
+
+                            return;
+                        }
+
+                        $calculator = app(EvaluationCalculatorService::class);
+                        $groups = Group::whereHas('evaluations', fn ($q) => $q->where('evaluation_session_id', $session->id))->get();
+                        foreach ($groups as $group) {
+                            $calculator->arbitrateGroup($group, $session);
+                        }
+
+                        Notification::make()
+                            ->title('Synchronisation API Tiiva réussie')
+                            ->body("{$result['groups_synced']} groupes, {$result['athletes_synced']} athlètes synchronisés et {$result['evaluations_created']} évaluations créées.")
+                            ->success()
+                            ->send();
+                    }),
+
+                Action::make('import_volunteering')
+                    ->label('Importer matrice bénévolats (Excel)')
+                    ->icon(Heroicon::OutlinedHeart)
+                    ->form([
+                        FileUpload::make('file')
+                            ->label('Classeur des participations bénévoles Tiiva (.xlsx)')
+                            ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'])
+                            ->disk('local')
+                            ->directory('imports')
+                            ->required(),
+                    ])
+                    ->action(function (array $data) use ($session): void {
+                        $filePath = Storage::disk('local')->path($data['file']);
+                        $importer = app(VolunteerImportService::class);
+                        $calculator = app(EvaluationCalculatorService::class);
+                        $result = $importer->import($filePath, $session, $calculator);
+
+                        $groups = Group::whereHas('evaluations', fn ($q) => $q->where('evaluation_session_id', $session->id))->get();
+                        foreach ($groups as $group) {
+                            $calculator->arbitrateGroup($group, $session);
+                        }
+
+                        $msg = "{$result['synced']} athlètes crédités de points bénévolat.";
+                        if ($result['unmatched'] > 0) {
+                            $msg .= " ({$result['unmatched']} participations sans athlète rattaché)";
+                        }
+
+                        Notification::make()
+                            ->title('Importation des bénévolats terminée')
+                            ->body($msg)
+                            ->info()
+                            ->send();
+                    }),
+
                 Action::make('import_tiiva')
-                    ->label('Importer les données Tiiva (Excel ou CSV)')
+                    ->label('Importer fichier export Tiiva (Excel ou CSV)')
                     ->icon(Heroicon::OutlinedArrowUpTray)
                     ->form([
                         FileUpload::make('file')

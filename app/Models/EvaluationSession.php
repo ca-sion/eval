@@ -19,6 +19,7 @@ class EvaluationSession extends Model
             'end_date' => 'date',
             'weeks_count' => 'integer',
             'is_closed' => 'boolean',
+            'last_tiiva_synced_at' => 'datetime',
         ];
     }
 

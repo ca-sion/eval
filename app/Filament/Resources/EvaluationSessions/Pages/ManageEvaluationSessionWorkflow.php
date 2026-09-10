@@ -13,7 +13,9 @@ use App\Models\Group;
 use App\Services\EvaluationCalculatorService;
 use App\Services\ExcelExportService;
 use App\Services\NdsImportService;
+use App\Services\TiivaApiService;
 use App\Services\TiivaImportService;
+use App\Services\VolunteerImportService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
@@ -76,9 +78,11 @@ class ManageEvaluationSessionWorkflow extends Page
     protected function getHeaderActions(): array
     {
         return [
+            $this->getSyncTiivaApiAction(),
             $this->getInitializeEvaluationsAction(),
             $this->getImportTiivaAction(),
             $this->getImportNdsAction(),
+            $this->getImportVolunteeringAction(),
             $this->getRecalculateArbitrateAction(),
             $this->getExportPdfMinutesAction(),
             $this->getExportExcelAction(),
@@ -96,14 +100,56 @@ class ManageEvaluationSessionWorkflow extends Page
     }
 
     /**
-     * Action Étape 1 : Initialiser les évaluations pour tous les athlètes actifs.
+     * Action Étape 1 : Synchroniser directement avec l'API REST de Tiiva.
+     */
+    public function getSyncTiivaApiAction(): Action
+    {
+        return Action::make('sync_tiiva_api')
+            ->label('Synchroniser avec l\'API Tiiva')
+            ->icon(Heroicon::OutlinedArrowPath)
+            ->color('primary')
+            ->requiresConfirmation()
+            ->modalHeading('Synchroniser groupes, athlètes et responsables légaux depuis Tiiva ?')
+            ->modalDescription('Cette action interroge l\'API officielle de Tiiva, met à jour les effectifs, enregistre les responsables légaux pour le bénévolat et prépare les fiches d\'évaluation.')
+            ->action(function (): void {
+                try {
+                    $api = app(TiivaApiService::class);
+                    $result = $api->syncAll($this->record);
+
+                    if (! ($result['success'] ?? false)) {
+                        Notification::make()
+                            ->title('Échec de la synchronisation Tiiva')
+                            ->body($result['error'] ?? 'Erreur inconnue')
+                            ->danger()
+                            ->send();
+
+                        return;
+                    }
+
+                    Notification::make()
+                        ->title('Synchronisation Tiiva réussie')
+                        ->body("{$result['groups_synced']} groupes analysés • {$result['athletes_synced']} athlètes synchronisés ({$result['athletes_created']} créés, {$result['athletes_updated']} màj) • {$result['evaluations_created']} fiches créées.")
+                        ->success()
+                        ->send();
+                } catch (\Throwable $e) {
+                    Notification::make()
+                        ->title('Erreur lors de la synchronisation Tiiva')
+                        ->body($e->getMessage())
+                        ->danger()
+                        ->send();
+                }
+            });
+    }
+
+    /**
+     * Action Étape 1 : Initialiser les évaluations pour tous les athlètes actifs existants.
      */
     public function getInitializeEvaluationsAction(): Action
     {
         return Action::make('initialize_evaluations')
-            ->label('Initialiser les fiches de tous les groupes')
+            ->label('Initialiser les fiches de la session')
             ->icon(Heroicon::OutlinedSparkles)
-            ->color('primary')
+            ->color('gray')
             ->requiresConfirmation()
             ->modalHeading('Générer les évaluations pour tous les athlètes actifs ?')
             ->modalDescription('Une fiche d\'évaluation collective sera créée pour chaque athlète actif dans son groupe d\'entraînement actuel.')
@@ -145,12 +191,12 @@ class ManageEvaluationSessionWorkflow extends Page
     }
 
     /**
-     * Action Étape 1 : Importer fichier Tiiva (Excel ou CSV).
+     * Action Étape 1 : Importer fichier Tiiva (Excel ou CSV - Secours).
      */
     public function getImportTiivaAction(): Action
     {
         return Action::make('import_tiiva')
-            ->label('Importer les données Tiiva (Excel ou CSV)')
+            ->label('Importer fichier Tiiva (Excel ou CSV)')
             ->icon(Heroicon::OutlinedArrowUpTray)
             ->color('gray')
             ->form([
@@ -188,7 +234,7 @@ class ManageEvaluationSessionWorkflow extends Page
     public function getImportNdsAction(): Action
     {
         return Action::make('import_nds')
-            ->label('Importer les présences NDS (Excel)')
+            ->label('Importer le classeur officiel NDS (Excel)')
             ->icon(Heroicon::OutlinedDocumentCheck)
             ->color('gray')
             ->form([
@@ -213,7 +259,7 @@ class ManageEvaluationSessionWorkflow extends Page
                 }
 
                 $unmatchedCount = count($result['unmatched']);
-                $msg = "{$result['synced']} athlètes synchronisés avec succès.";
+                $msg = "{$result['synced']} athlètes synchronisés avec succès selon le calendrier de la session.";
                 if ($unmatchedCount > 0) {
                     $msg .= " ({$unmatchedCount} non réconciliés : ".implode(', ', array_slice($result['unmatched'], 0, 3)).'...)';
                 }
@@ -222,6 +268,44 @@ class ManageEvaluationSessionWorkflow extends Page
                     ->title('Import NDS terminé')
                     ->body($msg)
                     ->info()
+                    ->send();
+            });
+    }
+
+    /**
+     * Action Étape 3bis : Importer matrice des participations bénévoles (Excel Tiiva).
+     */
+    public function getImportVolunteeringAction(): Action
+    {
+        return Action::make('import_volunteering')
+            ->label('Importer la matrice des bénévolats (Excel)')
+            ->icon(Heroicon::OutlinedHandRaised)
+            ->color('gray')
+            ->form([
+                FileUpload::make('file')
+                    ->label('Matrice des participations Tiiva (.xlsx ou .csv)')
+                    ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'text/csv', 'text/plain', 'application/vnd.ms-excel'])
+                    ->disk('local')
+                    ->directory('imports')
+                    ->required(),
+            ])
+            ->action(function (array $data): void {
+                $session = $this->record;
+                $filePath = Storage::disk('local')->path($data['file']);
+                $importer = app(VolunteerImportService::class);
+                $calculator = app(EvaluationCalculatorService::class);
+                $result = $importer->import($filePath, $session, $calculator);
+
+                // Recalculer l'arbitrage
+                $groups = Group::whereHas('evaluations', fn ($q) => $q->where('evaluation_session_id', $session->id))->get();
+                foreach ($groups as $group) {
+                    $calculator->arbitrateGroup($group, $session);
+                }
+
+                Notification::make()
+                    ->title('Import des bénévolats terminé')
+                    ->body("{$result['synced']} athlètes mis à jour avec les participations de leurs responsables légaux ({$result['total_missions']} missions réconciliées).")
+                    ->success()
                     ->send();
             });
     }

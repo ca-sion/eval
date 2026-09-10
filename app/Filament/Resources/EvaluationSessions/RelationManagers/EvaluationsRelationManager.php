@@ -143,8 +143,12 @@ class EvaluationsRelationManager extends RelationManager
                     ]),
 
                 Section::make('Remarques et décision')
-                    ->columns(2)
+                    ->columns(3)
                     ->schema([
+                        Select::make('context')
+                            ->options(EvaluationContext::class)
+                            ->required()
+                            ->label('Contexte d\'évaluation'),
                         Select::make('decision')
                             ->options(EvaluationDecision::class)
                             ->label('Décision'),
@@ -178,6 +182,10 @@ class EvaluationsRelationManager extends RelationManager
                         ->label('Année')
                         ->alignCenter()
                         ->sortable(),
+                    SelectColumn::make('context')
+                        ->label('Contexte')
+                        ->options(EvaluationContext::class)
+                        ->rules(['required']),
                 ]),
 
                 // 2. Assiduité et santé
@@ -377,6 +385,10 @@ class EvaluationsRelationManager extends RelationManager
                     ->searchable()
                     ->preload(),
 
+                SelectFilter::make('context')
+                    ->label('Contexte d\'évaluation')
+                    ->options(EvaluationContext::class),
+
                 SelectFilter::make('decision')
                     ->label('Décision d\'arbitrage')
                     ->options(EvaluationDecision::class),
@@ -474,6 +486,27 @@ class EvaluationsRelationManager extends RelationManager
             ], position: RecordActionsPosition::BeforeCells)
             ->toolbarActions([
                 BulkActionGroup::make([
+                    BulkAction::make('set_context')
+                        ->label('Changer le contexte d\'évaluation')
+                        ->icon(Heroicon::OutlinedArrowsRightLeft)
+                        ->form([
+                            Select::make('context')
+                                ->options(EvaluationContext::class)
+                                ->required()
+                                ->label('Nouveau contexte d\'évaluation'),
+                        ])
+                        ->action(function (Collection $records, array $data): void {
+                            foreach ($records as $record) {
+                                $record->update(['context' => $data['context']]);
+                            }
+
+                            Notification::make()
+                                ->title('Contexte d\'évaluation mis à jour')
+                                ->body("Le contexte a été mis à jour pour {$records->count()} athlètes.")
+                                ->success()
+                                ->send();
+                        }),
+
                     BulkAction::make('recalculate_arbitrate')
                         ->label('Recalculer et arbitrer la sélection')
                         ->icon(Heroicon::OutlinedScale)

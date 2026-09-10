@@ -30,7 +30,7 @@ test('admin can access the evaluation session workflow page', function () {
         ->assertSee('Session Automne 2026')
         ->assertSee('Étape 1 : Initialisation et effectifs')
         ->assertSee('Étape 2 : Saisie mobile des entraîneurs')
-        ->assertSee('Étape 3 : Données NDS et présences Jeunesse+Sport')
+        ->assertSee('Étape 3 : Présences NDS et bénévolats')
         ->assertSee('Étape 4 : Arbitrage et sélection')
         ->assertSee('Étape 5 : Livrables officiels et clôture');
 });

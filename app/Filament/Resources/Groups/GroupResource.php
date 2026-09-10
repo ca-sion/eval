@@ -8,6 +8,7 @@ use App\Filament\Resources\Groups\Pages\EditGroup;
 use App\Filament\Resources\Groups\Pages\ListGroups;
 use App\Filament\Resources\Groups\RelationManagers\AthletesRelationManager;
 use App\Models\Group;
+use App\Services\TiivaApiService;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -16,13 +17,16 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 class GroupResource extends Resource
@@ -62,6 +66,11 @@ class GroupResource extends Resource
                             ->disabled()
                             ->dehydrated(false)
                             ->helperText('Sécurise l\'accès mobile des entraîneurs sans mot de passe'),
+                        Toggle::make('is_training_group')
+                            ->label('Groupe d\'entraînement évalué')
+                            ->helperText('Active la synchronisation des athlètes et leur participation aux évaluations. Décochez pour ignorer les groupes comme le Comité, les Juges ou les Loisirs.')
+                            ->default(true)
+                            ->columnSpanFull(),
                     ]),
 
                 Section::make('Paramètres d\'arbitrage et de sélection')
@@ -120,6 +129,10 @@ class GroupResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
+                ToggleColumn::make('is_training_group')
+                    ->label('Évalué')
+                    ->alignCenter()
+                    ->tooltip('Activer/désactiver ce groupe pour les évaluations et la synchronisation'),
                 TextColumn::make('arbitration_mode')
                     ->label('Mode d\'arbitrage')
                     ->badge(),
@@ -144,12 +157,33 @@ class GroupResource extends Resource
                     ->color('primary'),
             ])
             ->filters([
+                TernaryFilter::make('is_training_group')
+                    ->label('Groupes évalués')
+                    ->placeholder('Tous les groupes')
+                    ->trueLabel('Uniquement les groupes évalués')
+                    ->falseLabel('Groupes ignorés (comité, loisirs, etc.)'),
                 SelectFilter::make('arbitration_mode')
                     ->label('Mode d\'arbitrage')
                     ->options(ArbitrageMode::class),
             ])
             ->recordActions([
                 ActionGroup::make([
+                    Action::make('sync_group')
+                        ->label('Synchroniser ce groupe')
+                        ->icon(Heroicon::OutlinedCloudArrowDown)
+                        ->color('gray')
+                        ->visible(fn (Group $record): bool => ! empty($record->tiiva_id) && $record->is_training_group)
+                        ->action(function (Group $record): void {
+                            $apiService = app(TiivaApiService::class);
+                            $result = $apiService->syncContacts($record);
+
+                            Notification::make()
+                                ->title("Groupe {$record->name} synchronisé")
+                                ->body("{$result['total']} athlètes trouvés, {$result['created']} nouveaux, {$result['updated']} mis à jour.")
+                                ->success()
+                                ->send();
+                        }),
+
                     Action::make('copy_link')
                         ->label('Copier le lien')
                         ->icon(Heroicon::OutlinedClipboardDocument)
