@@ -593,11 +593,7 @@ enum EvaluationCriterion: string implements HasColor, HasDescription, HasLabel
                     $required = $group?->required_volunteering_count ?? (int) config('evaluation.defaults.required_volunteering_count', 2);
                     if ($required > 0) {
                         $count = (int) $evaluation->parent_volunteering_count;
-                        if ($count >= $required) {
-                            $score = min(10.0, 7.5 + ($count - $required) * 1.25);
-                        } else {
-                            $score = max(0.0, ($count / $required) * 5.0);
-                        }
+                        $score = min(10.0, max(0.0, 2.0 + ($count * (4.0 / $required))));
 
                         return round($score, 2);
                     }

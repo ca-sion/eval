@@ -522,10 +522,7 @@
             get c9Score() {
                 const req = 2;
                 const count = Number(this.c9_volunteering);
-                if (count >= req) {
-                    return Math.min(10.0, 7.5 + (count - req) * 1.25);
-                }
-                return Math.max(0, (count / req) * 5.0);
+                return Math.min(10.0, Math.max(0.0, 2.0 + (count * (4.0 / req))));
             },
             get totalScore() {
                 const total = (Number(this.c1) * 0.20) +
@@ -624,10 +621,10 @@
                                 <span class="text-red-400 font-bold" x-text="c6_level + ' / 10'"></span>
                             </div>
                             <div class="grid grid-cols-4 gap-1.5 mt-2">
-                                <button type="button" @click="c6_level = 6.0" :class="c6_level === 6.0 ? 'bg-red-600 text-white font-bold' : 'bg-slate-700 text-slate-300'" class="py-1 rounded-lg text-xs transition">Cantonal (6.0)</button>
-                                <button type="button" @click="c6_level = 7.5" :class="c6_level === 7.5 ? 'bg-red-600 text-white font-bold' : 'bg-slate-700 text-slate-300'" class="py-1 rounded-lg text-xs transition">Régional (7.5)</button>
-                                <button type="button" @click="c6_level = 9.0" :class="c6_level === 9.0 ? 'bg-red-600 text-white font-bold' : 'bg-slate-700 text-slate-300'" class="py-1 rounded-lg text-xs transition">National (9.0)</button>
-                                <button type="button" @click="c6_level = 10.0" :class="c6_level === 10.0 ? 'bg-red-600 text-white font-bold' : 'bg-slate-700 text-slate-300'" class="py-1 rounded-lg text-xs transition">Inter. (10.0)</button>
+                                <button type="button" @click="c6_level = 5.5" :class="c6_level === 5.5 ? 'bg-red-600 text-white font-bold' : 'bg-slate-700 text-slate-300'" class="py-1 rounded-lg text-xs transition">Cantonal (5.5)</button>
+                                <button type="button" @click="c6_level = 6.0" :class="c6_level === 6.0 ? 'bg-red-600 text-white font-bold' : 'bg-slate-700 text-slate-300'" class="py-1 rounded-lg text-xs transition">Régional (6.0)</button>
+                                <button type="button" @click="c6_level = 7.0" :class="c6_level === 7.0 ? 'bg-red-600 text-white font-bold' : 'bg-slate-700 text-slate-300'" class="py-1 rounded-lg text-xs transition">National (7.0)</button>
+                                <button type="button" @click="c6_level = 9.0" :class="c6_level === 9.0 ? 'bg-red-600 text-white font-bold' : 'bg-slate-700 text-slate-300'" class="py-1 rounded-lg text-xs transition">Inter. (9.0)</button>
                             </div>
                         </div>
 
@@ -639,8 +636,8 @@
                             </div>
                             <input type="range" min="0" max="4" step="1" x-model.number="c9_volunteering" class="w-full accent-red-500 cursor-pointer">
                             <div class="flex justify-between text-[10px] text-slate-400 mt-1">
-                                <span>0 participation</span>
-                                <span>2 (requis, note 7.5)</span>
+                                <span>0 (note 2.0)</span>
+                                <span>2 (requis, note 6.0)</span>
                                 <span>4 (note 10.0)</span>
                             </div>
                         </div>

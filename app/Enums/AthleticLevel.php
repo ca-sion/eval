@@ -14,10 +14,10 @@ enum AthleticLevel: string implements HasLabel
     public function score(): float
     {
         return match ($this) {
-            self::Cantonal => 6.0,
-            self::Regional => 7.5,
-            self::National => 9.0,
-            self::International => 10.0,
+            self::Cantonal => 5.5,
+            self::Regional => 6.0,
+            self::National => 7.0,
+            self::International => 9.0,
         };
     }
 

@@ -143,7 +143,7 @@ test('c9 parent volunteering respects age limit', function () {
 
     $service = new EvaluationCalculatorService;
 
-    // Young athlete with 2 required volunteering events done -> 7.5
+    // Young athlete with 2 required volunteering events done -> 6.0 (Option A standard)
     $evalYoung = Evaluation::create([
         'athlete_id' => $youngAthlete->id,
         'group_id' => $group->id,
@@ -152,12 +152,12 @@ test('c9 parent volunteering respects age limit', function () {
         'parent_volunteering_count' => 2,
     ]);
     $service->calculateAthlete($evalYoung);
-    expect($evalYoung->c9_score)->toEqual(7.5);
+    expect($evalYoung->c9_score)->toEqual(6.0);
 
-    // Young athlete with 3 volunteering events done (1 extra) -> 7.5 + 1.25 = 8.75
+    // Young athlete with 3 volunteering events done (1 extra) -> 6.0 + 2.0 = 8.0
     $evalYoung->parent_volunteering_count = 3;
     $service->calculateAthlete($evalYoung);
-    expect($evalYoung->c9_score)->toEqual(8.75);
+    expect($evalYoung->c9_score)->toEqual(8.0);
 
     // Older athlete -> must be neutralized (null)
     $evalOlder = Evaluation::create([
