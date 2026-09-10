@@ -220,7 +220,7 @@ test('strict confidentiality is preserved in coach view', function () {
         'real_attendances' => 14,
         'competitions_done' => 5,
         'parent_volunteering_count' => 3,
-        'final_score' => 8.75,
+        'final_score' => 8.87,
         'base_average' => 8.00,
         'rank' => 1,
         'decision' => EvaluationDecision::Retained,
@@ -229,7 +229,7 @@ test('strict confidentiality is preserved in coach view', function () {
     $response = $this->get(route('group.mobile', ['group' => $group->access_token]));
 
     // Check that sensitive calculations and decision info are NOT in the view
-    $response->assertDontSee('8.75');
+    $response->assertDontSee('8.87');
     $response->assertDontSee('base_average');
     $response->assertDontSee('final_score');
     $response->assertDontSee('Retenu (quota)');

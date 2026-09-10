@@ -1,12 +1,15 @@
 <?php
 
 use App\Http\Controllers\PdfReportController;
+use App\Http\Controllers\PublicEvaluationGuideController;
 use App\Livewire\CoachGroupEvaluation;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect('/admin');
 });
+
+Route::get('/guide', PublicEvaluationGuideController::class)->name('guide');
 
 Route::get('/groupe/{group:access_token}', CoachGroupEvaluation::class)->name('group.mobile');
 
