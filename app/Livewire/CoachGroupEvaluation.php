@@ -113,7 +113,9 @@ class CoachGroupEvaluation extends Component
 
         // Permet de basculer entre Brouillon et Transmis si la session n'est pas fermée et dans les dates
         $today = Carbon::today();
-        $inTime = $today->betweenIncluded($evaluation->start_date, $evaluation->end_date);
+        $startDate = $evaluation->session?->start_date ?? $evaluation->start_date;
+        $endDate = $evaluation->session?->end_date ?? $evaluation->end_date;
+        $inTime = ($startDate && $endDate) ? $today->betweenIncluded($startDate, $endDate) : false;
         $notClosed = ! ($evaluation->session && $evaluation->session->is_closed);
 
         if (! $inTime || ! $notClosed) {
@@ -148,8 +150,16 @@ class CoachGroupEvaluation extends Component
         // Récupérer toutes les évaluations actives pour ce groupe aujourd'hui
         $evaluations = $this->group->evaluations()
             ->with(['athlete', 'session'])
-            ->whereDate('start_date', '<=', $today)
-            ->whereDate('end_date', '>=', $today)
+            ->where(function ($query) use ($today) {
+                $query->where(function ($q) use ($today) {
+                    $q->whereDate('start_date', '<=', $today)
+                        ->whereDate('end_date', '>=', $today);
+                })->orWhereHas('session', function ($q) use ($today) {
+                    $q->where('is_closed', false)
+                        ->whereDate('start_date', '<=', $today)
+                        ->whereDate('end_date', '>=', $today);
+                });
+            })
             ->get()
             ->sortBy(fn (Evaluation $eval) => $eval->athlete->first_name.' '.$eval->athlete->last_name, SORT_NATURAL | SORT_FLAG_CASE);
 

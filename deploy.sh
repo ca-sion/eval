@@ -37,10 +37,10 @@ fi
 
 # 6. Compilation des assets frontend (Vite & Tailwind v4)
 echo "🎨 Compilation des assets Frontend..."
-if command -v npm &> /dev/null; then
-    npm ci --prefer-offline --no-audit || npm install --no-audit
-    npm run build
-fi
+# if command -v npm &> /dev/null; then
+#    npm ci --prefer-offline --no-audit || npm install --no-audit
+#    npm run build
+# fi
 
 # 7. Exécution des migrations de base de données
 echo "🗄️ Exécution des migrations..."

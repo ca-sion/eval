@@ -69,6 +69,46 @@ test('contextual loading shows all athletes during collective session', function
         ->assertSee('Session Automne 2026');
 });
 
+test('updating session dates cascades to existing evaluations and reflects in coach front-end', function () {
+    // Initial session dates in October (not today)
+    Carbon::setTestNow('2026-09-10');
+
+    $group = Group::create(['name' => 'U16 Cascade']);
+    $session = EvaluationSession::create([
+        'title' => 'Session Cascade',
+        'start_date' => '2026-10-01',
+        'end_date' => '2026-10-31',
+        'weeks_count' => 4,
+    ]);
+
+    $athlete = Athlete::create(['group_id' => $group->id, 'first_name' => 'Julie', 'last_name' => 'Cascade', 'birth_year' => 2011]);
+    $eval = Evaluation::create([
+        'athlete_id' => $athlete->id,
+        'group_id' => $group->id,
+        'evaluation_session_id' => $session->id,
+        'context' => EvaluationContext::Collective,
+        'start_date' => '2026-10-01',
+        'end_date' => '2026-10-31',
+        'weeks_count' => 4,
+    ]);
+
+    // When session is updated to cover today (September 10)
+    $session->update([
+        'start_date' => '2026-09-01',
+        'end_date' => '2026-09-30',
+        'weeks_count' => 4,
+    ]);
+
+    // Evaluations must have their dates updated automatically
+    expect($eval->fresh()->start_date->format('Y-m-d'))->toBe('2026-09-01')
+        ->and($eval->fresh()->end_date->format('Y-m-d'))->toBe('2026-09-30');
+
+    // And coach can immediately see and edit the athlete
+    Livewire::test(CoachGroupEvaluation::class, ['group' => $group])
+        ->assertSee('Julie Cascade')
+        ->assertSee('Session Cascade');
+});
+
 test('outside collective session only athletes in active cycle are shown', function () {
     Carbon::setTestNow('2026-11-10');
 

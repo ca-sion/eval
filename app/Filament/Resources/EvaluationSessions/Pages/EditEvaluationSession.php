@@ -48,22 +48,26 @@ class EditEvaluationSession extends EditRecord
                 ->modalHeading('Générer les évaluations pour tous les athlètes actifs ?')
                 ->modalDescription('Une fiche d\'évaluation collective sera créée pour chaque athlète actif dans son groupe d\'entraînement actuel.')
                 ->action(function () use ($session): void {
-                    $activeAthletes = Athlete::where('status', AthleteStatus::Active)->with('group')->get();
+                    $athletes = Athlete::whereIn('status', [AthleteStatus::Active, AthleteStatus::Adaptation])->with('group')->get();
                     $createdCount = 0;
+                    $updatedCount = 0;
 
-                    foreach ($activeAthletes as $athlete) {
-                        $exists = Evaluation::where('evaluation_session_id', $session->id)
+                    foreach ($athletes as $athlete) {
+                        $existing = Evaluation::where('evaluation_session_id', $session->id)
                             ->where('athlete_id', $athlete->id)
-                            ->exists();
+                            ->first();
 
-                        if (! $exists) {
+                        if (! $existing) {
                             $group = $athlete->group;
+                            $context = ($athlete->status === AthleteStatus::Adaptation)
+                                ? EvaluationContext::Adaptation
+                                : EvaluationContext::Collective;
 
                             Evaluation::create([
                                 'athlete_id' => $athlete->id,
                                 'group_id' => $athlete->group_id,
                                 'evaluation_session_id' => $session->id,
-                                'context' => EvaluationContext::Collective,
+                                'context' => $context,
                                 'start_date' => $session->start_date,
                                 'end_date' => $session->end_date,
                                 'weeks_count' => $session->weeks_count,
@@ -72,12 +76,24 @@ class EditEvaluationSession extends EditRecord
                             ]);
 
                             $createdCount++;
+                        } else {
+                            $existing->update([
+                                'group_id' => $athlete->group_id,
+                                'start_date' => $session->start_date,
+                                'end_date' => $session->end_date,
+                                'weeks_count' => $session->weeks_count,
+                            ]);
+                            $updatedCount++;
                         }
                     }
 
+                    $msg = $createdCount > 0
+                        ? "{$createdCount} nouvelles fiches créées ({$updatedCount} fiches existantes synchronisées)."
+                        : "{$updatedCount} fiches existantes synchronisées avec les dates de la session.";
+
                     Notification::make()
-                        ->title('Initialisation terminée')
-                        ->body("{$createdCount} fiches d'évaluation créées pour la session.")
+                        ->title('Initialisation et synchronisation terminées')
+                        ->body($msg)
                         ->success()
                         ->send();
                 }),

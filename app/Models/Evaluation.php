@@ -90,20 +90,33 @@ class Evaluation extends Model
             return false;
         }
 
-        return $today->betweenIncluded($this->start_date, $this->end_date);
+        $startDate = $this->session?->start_date ?? $this->start_date;
+        $endDate = $this->session?->end_date ?? $this->end_date;
+
+        if (! $startDate || ! $endDate) {
+            return false;
+        }
+
+        return $today->betweenIncluded($startDate, $endDate);
     }
 
     public function currentWeekNumber(): int
     {
         $today = Carbon::today();
+        $startDate = $this->session?->start_date ?? $this->start_date;
+        $weeksCount = $this->session?->weeks_count ?? $this->weeks_count;
 
-        if ($today->lt($this->start_date)) {
+        if (! $startDate) {
             return 1;
         }
 
-        $diffDays = $this->start_date->diffInDays($today);
+        if ($today->lt($startDate)) {
+            return 1;
+        }
+
+        $diffDays = $startDate->diffInDays($today);
         $week = (int) floor($diffDays / 7) + 1;
 
-        return min($week, (int) $this->weeks_count);
+        return min($week, (int) ($weeksCount ?: 5));
     }
 }

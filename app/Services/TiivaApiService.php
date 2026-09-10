@@ -386,11 +386,11 @@ class TiivaApiService
                 $athletesToEvaluate = Athlete::whereIn('status', [AthleteStatus::Active, AthleteStatus::Adaptation])->with('group')->get();
 
                 foreach ($athletesToEvaluate as $athlete) {
-                    $exists = Evaluation::where('evaluation_session_id', $session->id)
+                    $existing = Evaluation::where('evaluation_session_id', $session->id)
                         ->where('athlete_id', $athlete->id)
-                        ->exists();
+                        ->first();
 
-                    if (! $exists) {
+                    if (! $existing) {
                         $group = $athlete->group;
                         $context = ($athlete->status === AthleteStatus::Adaptation)
                             ? EvaluationContext::Adaptation
@@ -412,6 +412,13 @@ class TiivaApiService
                         if ($context === EvaluationContext::Adaptation) {
                             $adaptationEvalsCreated++;
                         }
+                    } else {
+                        $existing->update([
+                            'group_id' => $athlete->group_id,
+                            'start_date' => $session->start_date,
+                            'end_date' => $session->end_date,
+                            'weeks_count' => $session->weeks_count,
+                        ]);
                     }
                 }
             }

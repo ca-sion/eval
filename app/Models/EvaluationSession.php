@@ -23,6 +23,19 @@ class EvaluationSession extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::saved(function (EvaluationSession $session): void {
+            if ($session->wasChanged(['start_date', 'end_date', 'weeks_count'])) {
+                $session->evaluations()->update([
+                    'start_date' => $session->start_date,
+                    'end_date' => $session->end_date,
+                    'weeks_count' => $session->weeks_count,
+                ]);
+            }
+        });
+    }
+
     public function evaluations(): HasMany
     {
         return $this->hasMany(Evaluation::class);
