@@ -97,7 +97,7 @@
                                     {{ $eval->athlete->first_name }} {{ $eval->athlete->last_name }}
                                 </h3>
                                 <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1 text-xs">
-                                    <span class="text-slate-500 font-medium whitespace-nowrap">Né(e) en {{ $eval->athlete->birth_year }}</span>
+                                    <span class="text-slate-500 font-medium whitespace-nowrap">{{ $eval->athlete->birth_year }}</span>
                                     <span class="text-slate-300 hidden sm:inline">•</span>
                                     <!-- Badge de contexte -->
                                     @if($eval->context === \App\Enums\EvaluationContext::Collective)
@@ -444,7 +444,7 @@
                                     :class="injured ? 'bg-amber-50' : 'bg-white group-hover:bg-slate-50'"
                                 >
                                     <div class="font-bold text-slate-900 leading-tight">{{ $eval->athlete->first_name }} {{ $eval->athlete->last_name }}</div>
-                                    <div class="text-[10px] text-slate-400">Né(e) {{ $eval->athlete->birth_year }}</div>
+                                    <div class="text-[10px] text-slate-400">{{ $eval->athlete->birth_year }}</div>
                                 </td>
 
                                 <!-- Contexte -->
