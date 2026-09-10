@@ -11,34 +11,46 @@ set -e
 
 echo "🚀 Démarrage du déploiement..."
 
-# 1. Activation du mode maintenance (avec rafraîchissement auto des navigateurs)
+# 1. Vérification / Initialisation du fichier .env et de la clé d'application
+if [ ! -f .env ]; then
+    echo "📄 Fichier .env absent : création depuis .env.example..."
+    cp .env.example .env
+fi
+
+# 2. Activation du mode maintenance (avec rafraîchissement auto des navigateurs)
 echo "🔒 Passage en mode maintenance..."
 php artisan down --refresh=15 --retry=60 || true
 
-# 2. Récupération des dernières modifications Git
+# 3. Récupération des dernières modifications Git
 echo "📥 Récupération du code source..."
 git pull origin main
 
-# 3. Installation des dépendances PHP de production
+# 4. Installation des dépendances PHP de production
 echo "📦 Installation des dépendances Composer..."
 composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 
-# 4. Compilation des assets frontend (Vite & Tailwind v4)
+# 5. Vérification et génération de la clé APP_KEY si absente
+if ! grep -q "^APP_KEY=base64:" .env 2>/dev/null; then
+    echo "🔑 Génération de la clé d'application (APP_KEY)..."
+    php artisan key:generate --force
+fi
+
+# 6. Compilation des assets frontend (Vite & Tailwind v4)
 echo "🎨 Compilation des assets Frontend..."
 if command -v npm &> /dev/null; then
     npm ci --prefer-offline --no-audit || npm install --no-audit
     npm run build
 fi
 
-# 5. Exécution des migrations de base de données
+# 7. Exécution des migrations de base de données
 echo "🗄️ Exécution des migrations..."
 php artisan migrate --force
 
-# 6. Initialisation du compte administrateur si nécessaire (idempotent)
+# 8. Initialisation du compte administrateur si nécessaire (idempotent)
 echo "👤 Vérification du compte administrateur initial..."
 php artisan db:seed --class=AdminUserSeeder --force
 
-# 7. Optimisation des caches Laravel & Filament
+# 9. Optimisation des caches Laravel & Filament
 echo "⚡ Optimisation et mise en cache..."
 php artisan optimize:clear
 php artisan optimize
@@ -46,11 +58,11 @@ php artisan view:cache
 php artisan filament:cache-components || true
 php artisan icons:cache || true
 
-# 8. Redémarrage des workers de file d'attente (si configurés)
+# 10. Redémarrage des workers de file d'attente (si configurés)
 # echo "🔄 Redémarrage des files d'attente (Queue)..."
 # php artisan queue:restart || true
 
-# 9. Désactivation du mode maintenance
+# 11. Désactivation du mode maintenance
 echo "🔓 Réouverture de l'application..."
 php artisan up
 
