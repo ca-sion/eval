@@ -43,10 +43,10 @@ test('public evaluation guide displays qualitative scale tiers and regulation ar
     $response->assertSee('Exceptionnel');
 
     // Regulation articles
-    $response->assertSee('Art. 3');
-    $response->assertSee('Art. 9');
-    $response->assertSee('Art. 10');
-    $response->assertSee('Art. 27');
+    $response->assertSee('art. 10.2');
+    $response->assertSee('art. 3.4');
+    $response->assertSee('Art. 10.4');
+    $response->assertSee('Art. 10.5');
 });
 
 test('evaluation context and decision enums expose complete regulation and description helpers', function () {
