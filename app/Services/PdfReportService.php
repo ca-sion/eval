@@ -7,14 +7,14 @@ use App\Models\Evaluation;
 use App\Models\EvaluationSession;
 use App\Models\Group;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Http\Response;
 
 class PdfReportService
 {
     /**
-     * Génère la fiche d'entretien individuelle en PDF.
+     * Génère et diffuse le flux PDF de la fiche d'entretien individuelle.
      */
-    public function generateInterviewReport(Evaluation $evaluation): StreamedResponse
+    public function generateInterviewReport(Evaluation $evaluation): Response
     {
         $evaluation->loadMissing(['athlete', 'group', 'session']);
 
@@ -23,22 +23,18 @@ class PdfReportService
         ])->setPaper('a4', 'portrait');
 
         $fileName = sprintf(
-            'fiche_entretien_%s_%s.pdf',
-            str_replace(' ', '_', strtolower($evaluation->athlete->last_name)),
-            $evaluation->start_date->format('Y_m')
+            'fiche-entretien-%s-%s.pdf',
+            str($evaluation->athlete->last_name)->slug('_', 'fr'),
+            $evaluation->start_date ? $evaluation->start_date->format('Ym') : date('Ym')
         );
 
-        return response()->streamDownload(
-            fn () => print ($pdf->output()),
-            $fileName,
-            ['Content-Type' => 'application/pdf']
-        );
+        return $pdf->stream($fileName);
     }
 
     /**
-     * Génère le Procès-Verbal officiel destiné au Comité du club.
+     * Génère et diffuse le flux PDF du Procès-Verbal officiel destiné au Comité du club.
      */
-    public function generateOfficialSessionMinutes(EvaluationSession $session): StreamedResponse
+    public function generateOfficialSessionMinutes(EvaluationSession $session): Response
     {
         $session->loadMissing('evaluations.athlete', 'evaluations.group');
 
@@ -70,14 +66,10 @@ class PdfReportService
         ])->setPaper('a4', 'landscape');
 
         $fileName = sprintf(
-            'PV_Comite_CA_Sion_%s.pdf',
-            str_replace(' ', '_', $session->title)
+            'PV-Evaluations-%s.pdf',
+            str($session->title)->slug('_', 'fr')
         );
 
-        return response()->streamDownload(
-            fn () => print ($pdf->output()),
-            $fileName,
-            ['Content-Type' => 'application/pdf']
-        );
+        return $pdf->stream($fileName);
     }
 }

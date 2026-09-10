@@ -10,7 +10,6 @@ use App\Enums\EvaluationDecision;
 use App\Models\Evaluation;
 use App\Models\Group;
 use App\Services\EvaluationCalculatorService;
-use App\Services\PdfReportService;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -409,7 +408,8 @@ class EvaluationsRelationManager extends RelationManager
                         ->label('Fiche d\'entretien (PDF)')
                         ->icon(Heroicon::OutlinedDocumentArrowDown)
                         ->color('gray')
-                        ->action(fn (Evaluation $record) => app(PdfReportService::class)->generateInterviewReport($record)),
+                        ->url(fn (Evaluation $record) => route('evaluations.pdf', $record))
+                        ->openUrlInNewTab(),
 
                     Action::make('validate_athlete')
                         ->label('Valider définitivement (Art. 10)')

@@ -2,12 +2,12 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <title>Procès-Verbal Officiel des Sélections - {{ $session->title }}</title>
+    <title>Procès-verbal d'évaluation - {{ $session->title }}</title>
     <style>
         body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; color: #1e293b; line-height: 1.4; margin: 25px; }
         .page-break { page-break-before: always; }
         .header { border-bottom: 2px solid #dc2626; padding-bottom: 15px; margin-bottom: 25px; }
-        .title { font-size: 20px; font-weight: 800; color: #0f172a; text-transform: uppercase; }
+        .title { font-size: 20px; font-weight: bold; color: #0f172a; text-transform: uppercase; }
         .subtitle { font-size: 12px; color: #64748b; margin-top: 4px; }
         .badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 9px; font-weight: bold; }
         .badge-success { background-color: #dcfce7; color: #15803d; }
@@ -21,7 +21,7 @@
         .box { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; margin-bottom: 15px; }
         .signatures { width: 100%; margin-top: 50px; border-collapse: collapse; }
         .signatures td { width: 50%; border-top: 1px solid #94a3b8; padding-top: 10px; font-size: 11px; color: #475569; text-align: center; }
-        .defective { color: #dc2626; font-size: 10px; margin-top: 3px; }
+        .defective { font-size: 10px; margin-top: 3px; }
     </style>
 </head>
 <body>
@@ -31,33 +31,33 @@
         <table style="width: 100%;">
             <tr>
                 <td>
-                    <div class="title">Procès-Verbal Officiel de Sélection</div>
-                    <div class="subtitle">Club des Athlètes de Sion (CA Sion) • Séances du Comité • Statuts Art. 3, 10 & 27</div>
+                    <div class="title">Procès-verbal d'évaluation</div>
+                    <div class="subtitle">CA Sion • Règlement Art. 3, 10 et 27</div>
                 </td>
                 <td class="text-right">
-                    <div style="font-size: 14px; font-weight: bold; color: #dc2626;">SESSION {{ $session->title }}</div>
-                    <div style="font-size: 10px; color: #64748b;">Édité le {{ date('d/m/Y') }}</div>
+                    <div style="font-size: 14px; font-weight: bold; color: #dc2626;">{{ $session->title }}</div>
+                    <div style="font-size: 10px; color: #64748b;">Édité le {{ date('d.m.Y') }}</div>
                 </td>
             </tr>
         </table>
     </div>
 
     <div class="box">
-        <strong>Période d'observation officielle :</strong> du {{ $session->start_date->format('d/m/Y') }} au {{ $session->end_date->format('d/m/Y') }} ({{ $session->weeks_count }} semaines).<br>
+        <strong>Période d'observation :</strong> du {{ $session->start_date->format('d.m.Y') }} au {{ $session->end_date->format('d.m.Y') }} ({{ $session->weeks_count }} semaines).<br>
         <strong>Objet :</strong> Ratification des admissions, attribution des places par quota/seuil, confirmation des sursis probatoires de 2 semaines (Art. 10.5) et motifs d'exclusion/non-admission (Art. 27).
     </div>
 
-    <h3 style="text-transform: uppercase; font-size: 13px; color: #0f172a; margin-top: 25px;">Tableau récapitulatif par groupe d'entraînement</h3>
+    <h3 style="font-size: 13px; color: #0f172a; margin-top: 25px;">Tableau récapitulatif par groupe d'entraînement</h3>
 
     <table class="table">
         <thead>
             <tr>
                 <th>Groupe</th>
                 <th class="text-center" style="width: 15%;">Mode d'arbitrage</th>
-                <th class="text-center" style="width: 12%;">Effectif total</th>
-                <th class="text-center" style="width: 15%; background-color: #dcfce7;">Retenus</th>
-                <th class="text-center" style="width: 18%; background-color: #fef3c7;">Sursis probatoires</th>
-                <th class="text-center" style="width: 15%; background-color: #fee2e2;">Non retenus</th>
+                <th class="text-center" style="width: 10%;">Effectif</th>
+                <th class="text-center" style="width: 10%; background-color: #dcfce7;">Retenus</th>
+                <th class="text-center" style="width: 10%; background-color: #fef3c7;">Sursis probatoires</th>
+                <th class="text-center" style="width: 10%; background-color: #fee2e2;">Non retenus</th>
             </tr>
         </thead>
         <tbody>
@@ -84,7 +84,7 @@
                 </tr>
             @endforeach
             <tr style="background-color: #f8fafc; font-weight: bold;">
-                <td>TOTAL GÉNÉRAL DU CLUB</td>
+                <td>Totaux</td>
                 <td class="text-center">-</td>
                 <td class="text-center">{{ $totalAthletes }}</td>
                 <td class="text-center" style="color: #15803d;">{{ $totalRetained }}</td>
@@ -97,13 +97,13 @@
     <table class="signatures">
         <tr>
             <td>
-                <strong>Le Responsable Technique</strong><br>
-                <span style="font-size: 9px; color: #94a3b8;">Visa et propositions transmises au Comité</span><br><br><br>
+                <strong>Chef Technique</strong><br>
+                <span style="font-size: 9px; color: #94a3b8;">Visa et propositions transmises au Comité</span><br><br><br><br>
                 _______________________________________
             </td>
             <td>
-                <strong>Pour le Comité du CA Sion (Président)</strong><br>
-                <span style="font-size: 9px; color: #94a3b8;">Ratification officielle des décisions</span><br><br><br>
+                <strong>Président</strong><br>
+                <span style="font-size: 9px; color: #94a3b8;">Ratification</span><br><br><br><br>
                 _______________________________________
             </td>
         </tr>
@@ -118,7 +118,7 @@
                 <tr>
                     <td>
                         <div class="title">{{ $data['group']->name }}</div>
-                        <div class="subtitle">Procès-verbal de sélection • Session {{ $session->title }}</div>
+                        <div class="subtitle">Procès-verbal d'évaluation • Session {{ $session->title }}</div>
                     </td>
                     <td class="text-right">
                         <span class="badge badge-success">{{ $data['retained'] }} Retenus</span>
@@ -132,12 +132,12 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th style="width: 8%; text-align: center;">Rang</th>
-                    <th style="width: 30%;">Nom & Prénom</th>
-                    <th style="width: 12%; text-align: center;">Année</th>
-                    <th style="width: 15%; text-align: center;">Note (/10)</th>
+                    <th style="width: 5%; text-align: center;">Rang</th>
+                    <th style="width: 25%;">Nom et prénom</th>
+                    <th style="width: 10%; text-align: center;">Année</th>
+                    <th style="width: 10%; text-align: center;">Note (/10)</th>
                     <th style="width: 15%; text-align: center;">Décision</th>
-                    <th style="width: 20%;">Détails & Motifs</th>
+                    <th style="width: 35%;">Détails et motifs</th>
                 </tr>
             </thead>
             <tbody>
@@ -145,9 +145,9 @@
                     <tr>
                         <td class="text-center font-bold">{{ $eval->rank ?? '-' }}</td>
                         <td>
-                            <strong>{{ $eval->athlete->last_name }}</strong> {{ $eval->athlete->first_name }}
+                            {{ $eval->athlete->first_name }} {{ $eval->athlete->last_name }}
                             @if($eval->is_injured)
-                                <div style="font-size: 9px; color: #d97706;">[Blessé durant la session]</div>
+                                <div style="font-size: 9px; color: #d97706;">[Blessé durant la période]</div>
                             @endif
                         </td>
                         <td class="text-center">{{ $eval->athlete->birth_year }}</td>
@@ -170,22 +170,25 @@
                                 <div class="defective">
                                     <strong>Critères sous le seuil :</strong><br>
                                     @if($eval->c1_score !== null && $eval->c1_score < 6)
-                                        • Assiduité : {{ number_format($eval->c1_score, 1) }}/10<br>
+                                        • Assiduité : {{ number_format($eval->c1_score, 1) }}<br>
                                     @endif
                                     @if($eval->c2_score !== null && $eval->c2_score < 6)
-                                        • Ponctualité : {{ number_format($eval->c2_score, 1) }}/10<br>
+                                        • Ponctualité : {{ number_format($eval->c2_score, 1) }}<br>
                                     @endif
                                     @if($eval->c3_score !== null && $eval->c3_score < 6)
-                                        • Compétitions : {{ number_format($eval->c3_score, 1) }}/10<br>
+                                        • Compétitions : {{ number_format($eval->c3_score, 1) }}<br>
                                     @endif
                                     @if($eval->c4_commitment !== null && $eval->c4_commitment < 6)
-                                        • Implication : {{ number_format($eval->c4_commitment, 1) }}/10<br>
+                                        • Implication : {{ number_format($eval->c4_commitment, 1) }}<br>
                                     @endif
                                     @if($eval->c5_behavior !== null && $eval->c5_behavior < 6)
-                                        • Comportement : {{ number_format($eval->c5_behavior, 1) }}/10<br>
+                                        • Comportement : {{ number_format($eval->c5_behavior, 1) }}<br>
                                     @endif
                                     @if($eval->c7_progress !== null && $eval->c7_progress < 6)
-                                        • Progression : {{ number_format($eval->c7_progress, 1) }}/10<br>
+                                        • Progression : {{ number_format($eval->c7_progress, 1) }}<br>
+                                    @endif
+                                    @if($eval->c8_environment !== null && $eval->c8_environment < 6)
+                                        • Environnement : {{ number_format($eval->c8_environment, 1) }}<br>
                                     @endif
                                     <em>Sursis probatoire 2 sem. (Art. 10.5)</em>
                                 </div>

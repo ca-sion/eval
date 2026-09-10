@@ -12,7 +12,6 @@ use App\Models\Group;
 use App\Services\EvaluationCalculatorService;
 use App\Services\ExcelExportService;
 use App\Services\NdsImportService;
-use App\Services\PdfReportService;
 use App\Services\TiivaImportService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -169,7 +168,8 @@ class EditEvaluationSession extends EditRecord
                     ->label('Procès-Verbal officiel Comité (PDF)')
                     ->icon(Heroicon::OutlinedDocumentText)
                     ->color('danger')
-                    ->action(fn () => app(PdfReportService::class)->generateOfficialSessionMinutes($session)),
+                    ->url(fn () => route('evaluation-sessions.minutes.pdf', $session))
+                    ->openUrlInNewTab(),
 
                 Action::make('export_excel')
                     ->label('Classeur de résultats (Excel multi-onglets)')

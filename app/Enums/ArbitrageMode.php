@@ -12,8 +12,8 @@ enum ArbitrageMode: string implements HasLabel
     public function getLabel(): ?string
     {
         return match ($this) {
-            self::Quota => 'Quota (places fixes)',
-            self::Threshold => 'Threshold (note minimale)',
+            self::Quota => 'Quota',
+            self::Threshold => 'Note minimale',
         };
     }
 }
