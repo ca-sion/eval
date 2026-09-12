@@ -66,7 +66,7 @@ class GroupResource extends Resource
                             ->disabled()
                             ->dehydrated(false)
                             ->helperText('Sécurise l\'accès mobile des entraîneurs sans mot de passe'),
-                        Toggle::make('is_training_group')
+                        Toggle::make('is_activity_group')
                             ->label('Groupe d\'entraînement évalué')
                             ->helperText('Active la synchronisation des athlètes et leur participation aux évaluations. Décochez pour ignorer les groupes comme le Comité, les Juges ou les Loisirs.')
                             ->default(true)
@@ -129,7 +129,7 @@ class GroupResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
-                ToggleColumn::make('is_training_group')
+                ToggleColumn::make('is_activity_group')
                     ->label('Évalué')
                     ->alignCenter()
                     ->tooltip('Activer/désactiver ce groupe pour les évaluations et la synchronisation'),
@@ -157,7 +157,7 @@ class GroupResource extends Resource
                     ->color('primary'),
             ])
             ->filters([
-                TernaryFilter::make('is_training_group')
+                TernaryFilter::make('is_activity_group')
                     ->label('Groupes évalués')
                     ->placeholder('Tous les groupes')
                     ->trueLabel('Uniquement les groupes évalués')
@@ -172,7 +172,7 @@ class GroupResource extends Resource
                         ->label('Synchroniser ce groupe')
                         ->icon(Heroicon::OutlinedCloudArrowDown)
                         ->color('gray')
-                        ->visible(fn (Group $record): bool => ! empty($record->tiiva_id) && $record->is_training_group)
+                        ->visible(fn (Group $record): bool => ! empty($record->tiiva_id) && $record->is_activity_group)
                         ->action(function (Group $record): void {
                             $apiService = app(TiivaApiService::class);
                             $result = $apiService->syncContacts($record);

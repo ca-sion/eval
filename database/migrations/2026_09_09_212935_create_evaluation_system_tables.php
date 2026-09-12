@@ -26,7 +26,7 @@ return new class extends Migration
             $table->string('tiiva_id')->nullable()->index();
             $table->string('color')->nullable();
             $table->integer('order')->nullable()->default(0);
-            $table->boolean('is_training_group')->default(true);
+            $table->boolean('is_activity_group')->default(true);
             $table->timestamps();
         });
 

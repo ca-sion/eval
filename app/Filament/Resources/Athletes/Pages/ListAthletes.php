@@ -40,7 +40,7 @@ class ListAthletes extends ListRecords
                         }
                     }
 
-                    $groups = Group::where('is_training_group', true)->pluck('name', 'id')->toArray();
+                    $groups = Group::where('is_activity_group', true)->pluck('name', 'id')->toArray();
 
                     if (empty($groups)) {
                         return [

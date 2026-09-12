@@ -117,8 +117,8 @@ class TiivaApiService
             }
 
             // Utilisation directe du statut officiel défini dans Tiiva
-            $isTrainingGroupInTiiva = isset($attrs['is_training_group'])
-                ? (bool) $attrs['is_training_group']
+            $isTrainingGroupInTiiva = isset($attrs['is_activity_group'])
+                ? (bool) $attrs['is_activity_group']
                 : (! ($attrs['is_volunteers_group'] ?? false));
 
             if ($group) {
@@ -128,7 +128,7 @@ class TiivaApiService
                     'color' => $attrs['color'] ?? $group->color,
                     'order' => $attrs['order'] ?? $group->order,
                     // Conserver le choix d'activation local s'il a été défini, sinon prendre la valeur officielle de Tiiva
-                    'is_training_group' => $group->is_training_group ?? $isTrainingGroupInTiiva,
+                    'is_activity_group' => $group->is_activity_group ?? $isTrainingGroupInTiiva,
                 ]);
                 $updated++;
             } else {
@@ -137,7 +137,7 @@ class TiivaApiService
                     'name' => $name,
                     'color' => $attrs['color'] ?? null,
                     'order' => $attrs['order'] ?? 0,
-                    'is_training_group' => $isTrainingGroupInTiiva,
+                    'is_activity_group' => $isTrainingGroupInTiiva,
                 ]);
                 $created++;
             }
@@ -162,7 +162,7 @@ class TiivaApiService
                     $deletedCount++;
                 } else {
                     $missingGroup->update([
-                        'is_training_group' => false,
+                        'is_activity_group' => false,
                     ]);
                     $deactivatedCount++;
                 }
@@ -195,7 +195,7 @@ class TiivaApiService
 
         $targetGroups = $specificGroup
             ? collect([$specificGroup])
-            : Group::where('is_training_group', true)->whereNotNull('tiiva_id')->get();
+            : Group::where('is_activity_group', true)->whereNotNull('tiiva_id')->get();
 
         $created = 0;
         $updated = 0;

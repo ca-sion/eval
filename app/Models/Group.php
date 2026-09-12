@@ -25,7 +25,7 @@ class Group extends Model
             'min_score' => 'float',
             'max_volunteering_age' => 'integer',
             'required_volunteering_count' => 'integer',
-            'is_training_group' => 'boolean',
+            'is_activity_group' => 'boolean',
             'order' => 'integer',
         ];
     }
