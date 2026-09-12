@@ -42,10 +42,12 @@ class Group extends Model
                     $count++;
                 }
                 $group->slug = $slug;
+            } else {
+                $group->slug = Str::slug($group->slug);
             }
 
             if (empty($group->access_token)) {
-                $group->access_token = Str::random(64);
+                $group->access_token = static::generateUniqueAccessToken($group->slug);
             }
 
             if ($group->default_sessions_per_week === null) {
@@ -70,6 +72,12 @@ class Group extends Model
 
             if ($group->required_volunteering_count === null) {
                 $group->required_volunteering_count = (int) config('evaluation.defaults.required_volunteering_count', 2);
+            }
+        });
+
+        static::updating(function (Group $group): void {
+            if ($group->isDirty('slug') && ! empty($group->slug)) {
+                $group->slug = Str::slug($group->slug);
             }
         });
     }
@@ -137,9 +145,20 @@ class Group extends Model
         return "https://api.whatsapp.com/send?text={$text}";
     }
 
+    public static function generateUniqueAccessToken(?string $slug = null): string
+    {
+        $base = $slug ? Str::limit($slug, 40, '') : 'groupe';
+
+        do {
+            $token = "{$base}-".Str::lower(Str::random(10));
+        } while (static::where('access_token', $token)->exists());
+
+        return $token;
+    }
+
     public function regenerateAccessToken(): string
     {
-        $this->update(['access_token' => Str::random(64)]);
+        $this->update(['access_token' => static::generateUniqueAccessToken($this->slug)]);
 
         return $this->access_token;
     }

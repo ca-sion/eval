@@ -25,6 +25,51 @@ test('coach can access mobile interface with valid access token', function () {
     $response->assertSee('CA Sion');
 });
 
+test('access token is formatted as readable slug and random suffix', function () {
+    $group = Group::create(['name' => 'U14 Garçons']);
+
+    expect($group->access_token)
+        ->toStartWith('u14-garcons-')
+        ->and(strlen($group->access_token))->toBe(strlen('u14-garcons-') + 10);
+
+    $oldToken = $group->access_token;
+    $newToken = $group->regenerateAccessToken();
+
+    expect($newToken)
+        ->toStartWith('u14-garcons-')
+        ->and($newToken)->not->toBe($oldToken);
+});
+
+test('legacy 32-character access tokens remain fully functional for retrocompatibility', function () {
+    $legacyToken = 'aBcDeFgHiJkLmNoPqRsTuVwXyZ123456';
+    $group = Group::create([
+        'name' => 'Ancien Groupe 2025',
+        'access_token' => $legacyToken,
+    ]);
+
+    $response = $this->get(route('group.mobile', ['group' => $legacyToken]));
+
+    $response->assertStatus(200);
+    $response->assertSee('Ancien Groupe 2025');
+});
+
+test('updating slug preserves existing token until explicit regeneration', function () {
+    $group = Group::create(['name' => 'U14 Garçons']);
+    $initialToken = $group->access_token;
+
+    $group->update(['slug' => 'u14-boys-sprint']);
+
+    expect($group->fresh()->slug)->toBe('u14-boys-sprint')
+        ->and($group->fresh()->access_token)->toBe($initialToken);
+
+    // Mobile URL still works with original token
+    $this->get(route('group.mobile', ['group' => $initialToken]))->assertStatus(200);
+
+    // Regenerating uses the new slug
+    $newToken = $group->regenerateAccessToken();
+    expect($newToken)->toStartWith('u14-boys-sprint-');
+});
+
 test('invalid token returns 404', function () {
     $response = $this->get('/groupe/invalid-token-123456');
 

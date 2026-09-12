@@ -21,6 +21,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
@@ -28,6 +29,7 @@ use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 
 class GroupResource extends Resource
 {
@@ -52,12 +54,20 @@ class GroupResource extends Resource
                         TextInput::make('name')
                             ->label('Nom du groupe')
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function (string $operation, ?string $state, Set $set): void {
+                                if ($operation === 'create' && filled($state)) {
+                                    $set('slug', Str::slug($state));
+                                }
+                            }),
                         TextInput::make('slug')
                             ->label('Identifiant URL (slug)')
-                            ->disabled()
-                            ->dehydrated(false)
-                            ->helperText('Généré automatiquement à la création'),
+                            ->required()
+                            ->maxLength(255)
+                            ->unique(Group::class, 'slug', ignoreRecord: true)
+                            ->rules(['alpha_dash'])
+                            ->helperText('Identifiant unique pour l\'URL et la génération du token.'),
                         TextInput::make('tiiva_id')
                             ->label('Identifiant Tiiva')
                             ->nullable(),
