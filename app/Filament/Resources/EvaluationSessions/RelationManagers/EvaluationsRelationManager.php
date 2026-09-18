@@ -173,19 +173,23 @@ class EvaluationsRelationManager extends RelationManager
                         ->label('Nom')
                         ->searchable()
                         ->sortable()
-                        ->weight('bold'),
+                        ->weight('bold')
+                        ->toggleable(),
                     TextColumn::make('athlete.first_name')
                         ->label('Prénom')
                         ->searchable()
-                        ->sortable(),
+                        ->sortable()
+                        ->toggleable(),
                     TextColumn::make('athlete.birth_year')
                         ->label('Année')
                         ->alignCenter()
-                        ->sortable(),
+                        ->sortable()
+                        ->toggleable(),
                     SelectColumn::make('context')
                         ->label('Contexte')
                         ->options(EvaluationContext::class)
-                        ->rules(['required']),
+                        ->rules(['required'])
+                        ->toggleable(),
                 ]),
 
                 // 2. Assiduité et santé
@@ -197,7 +201,8 @@ class EvaluationsRelationManager extends RelationManager
                         ->rules(['required', 'numeric', 'min:1'])
                         ->afterStateUpdated(function (Evaluation $record): void {
                             app(EvaluationCalculatorService::class)->calculateAthlete($record);
-                        }),
+                        })
+                        ->toggleable(),
 
                     TextInputColumn::make('real_attendances')
                         ->label('Présences')
@@ -206,7 +211,8 @@ class EvaluationsRelationManager extends RelationManager
                         ->rules(['nullable', 'numeric', 'min:0'])
                         ->afterStateUpdated(function (Evaluation $record): void {
                             app(EvaluationCalculatorService::class)->calculateAthlete($record);
-                        }),
+                        })
+                        ->toggleable(),
 
                     TextInputColumn::make('lateness_count')
                         ->label('Retards')
@@ -215,7 +221,8 @@ class EvaluationsRelationManager extends RelationManager
                         ->rules(['numeric', 'min:0'])
                         ->afterStateUpdated(function (Evaluation $record): void {
                             app(EvaluationCalculatorService::class)->calculateAthlete($record);
-                        }),
+                        })
+                        ->toggleable(),
 
                     ToggleColumn::make('is_injured')
                         ->label('Blessure')
@@ -223,7 +230,8 @@ class EvaluationsRelationManager extends RelationManager
                         ->alignCenter()
                         ->afterStateUpdated(function (Evaluation $record): void {
                             app(EvaluationCalculatorService::class)->calculateAthlete($record);
-                        }),
+                        })
+                        ->toggleable(),
                 ]),
 
                 // 3. Compétitions et bénévolat
@@ -235,7 +243,8 @@ class EvaluationsRelationManager extends RelationManager
                         ->rules(['required', 'numeric', 'min:0'])
                         ->afterStateUpdated(function (Evaluation $record): void {
                             app(EvaluationCalculatorService::class)->calculateAthlete($record);
-                        }),
+                        })
+                        ->toggleable(),
 
                     TextInputColumn::make('competitions_done')
                         ->label('Compét. faites')
@@ -244,7 +253,8 @@ class EvaluationsRelationManager extends RelationManager
                         ->rules(['numeric', 'min:0'])
                         ->afterStateUpdated(function (Evaluation $record): void {
                             app(EvaluationCalculatorService::class)->calculateAthlete($record);
-                        }),
+                        })
+                        ->toggleable(),
 
                     TextInputColumn::make('parent_volunteering_count')
                         ->label('Bénévolats parents')
@@ -253,7 +263,8 @@ class EvaluationsRelationManager extends RelationManager
                         ->rules(['numeric', 'min:0'])
                         ->afterStateUpdated(function (Evaluation $record): void {
                             app(EvaluationCalculatorService::class)->calculateAthlete($record);
-                        }),
+                        })
+                        ->toggleable(),
                 ]),
 
                 // 4. Critères d'évaluation (sur 10)
@@ -263,21 +274,24 @@ class EvaluationsRelationManager extends RelationManager
                         ->tooltip(fn (Evaluation $record) => $record->is_injured ? 'Critère neutralisé pour cause de blessure.' : static::criterionTooltip(EvaluationCriterion::C1_Attendance))
                         ->alignCenter()
                         ->placeholder('-')
-                        ->formatStateUsing(fn ($state, Evaluation $record) => $record->is_injured ? 'Neutralisé' : ($state !== null ? number_format($state, 1) : '-')),
+                        ->formatStateUsing(fn ($state, Evaluation $record) => $record->is_injured ? 'Neutralisé' : ($state !== null ? number_format($state, 1) : '-'))
+                        ->toggleable(),
 
                     TextColumn::make('c2_score')
                         ->label(EvaluationCriterion::C2_Punctuality->code().' : '.EvaluationCriterion::C2_Punctuality->shortLabel())
                         ->tooltip(static::criterionTooltip(EvaluationCriterion::C2_Punctuality))
                         ->alignCenter()
                         ->placeholder('-')
-                        ->formatStateUsing(fn ($state) => $state !== null ? number_format($state, 1) : '-'),
+                        ->formatStateUsing(fn ($state) => $state !== null ? number_format($state, 1) : '-')
+                        ->toggleable(),
 
                     TextColumn::make('c3_score')
                         ->label(EvaluationCriterion::C3_Competitions->code().' : '.EvaluationCriterion::C3_Competitions->shortLabel())
                         ->tooltip(fn (Evaluation $record) => $record->is_injured ? 'Critère neutralisé pour cause de blessure.' : static::criterionTooltip(EvaluationCriterion::C3_Competitions))
                         ->alignCenter()
                         ->placeholder('-')
-                        ->formatStateUsing(fn ($state, Evaluation $record) => $record->is_injured ? 'Neutralisé' : ($state !== null ? number_format($state, 1) : '-')),
+                        ->formatStateUsing(fn ($state, Evaluation $record) => $record->is_injured ? 'Neutralisé' : ($state !== null ? number_format($state, 1) : '-'))
+                        ->toggleable(),
 
                     TextInputColumn::make('c4_commitment')
                         ->label(EvaluationCriterion::C4_Commitment->code().' : '.EvaluationCriterion::C4_Commitment->shortLabel())
@@ -286,7 +300,8 @@ class EvaluationsRelationManager extends RelationManager
                         ->rules(['nullable', 'numeric', 'min:0', 'max:10'])
                         ->afterStateUpdated(function (Evaluation $record): void {
                             app(EvaluationCalculatorService::class)->calculateAthlete($record);
-                        }),
+                        })
+                        ->toggleable(),
 
                     TextInputColumn::make('c5_behavior')
                         ->label(EvaluationCriterion::C5_Behavior->code().' : '.EvaluationCriterion::C5_Behavior->shortLabel())
@@ -295,7 +310,8 @@ class EvaluationsRelationManager extends RelationManager
                         ->rules(['nullable', 'numeric', 'min:0', 'max:10'])
                         ->afterStateUpdated(function (Evaluation $record): void {
                             app(EvaluationCalculatorService::class)->calculateAthlete($record);
-                        }),
+                        })
+                        ->toggleable(),
 
                     SelectColumn::make('c6_level')
                         ->label(EvaluationCriterion::C6_Performance->code().' : '.EvaluationCriterion::C6_Performance->shortLabel())
@@ -303,7 +319,8 @@ class EvaluationsRelationManager extends RelationManager
                         ->options(AthleticLevel::class)
                         ->afterStateUpdated(function (Evaluation $record): void {
                             app(EvaluationCalculatorService::class)->calculateAthlete($record);
-                        }),
+                        })
+                        ->toggleable(),
 
                     TextInputColumn::make('c7_progress')
                         ->label(EvaluationCriterion::C7_Progress->code().' : '.EvaluationCriterion::C7_Progress->shortLabel())
@@ -312,7 +329,8 @@ class EvaluationsRelationManager extends RelationManager
                         ->rules(['nullable', 'numeric', 'min:0', 'max:10'])
                         ->afterStateUpdated(function (Evaluation $record): void {
                             app(EvaluationCalculatorService::class)->calculateAthlete($record);
-                        }),
+                        })
+                        ->toggleable(),
 
                     TextInputColumn::make('c8_environment')
                         ->label(EvaluationCriterion::C8_Environment->code().' : '.EvaluationCriterion::C8_Environment->shortLabel())
@@ -321,14 +339,16 @@ class EvaluationsRelationManager extends RelationManager
                         ->rules(['nullable', 'numeric', 'min:0', 'max:10'])
                         ->afterStateUpdated(function (Evaluation $record): void {
                             app(EvaluationCalculatorService::class)->calculateAthlete($record);
-                        }),
+                        })
+                        ->toggleable(),
 
                     TextColumn::make('c9_score')
                         ->label(EvaluationCriterion::C9_Volunteering->code().' : '.EvaluationCriterion::C9_Volunteering->shortLabel())
                         ->tooltip(static::criterionTooltip(EvaluationCriterion::C9_Volunteering))
                         ->alignCenter()
                         ->placeholder('-')
-                        ->formatStateUsing(fn ($state, Evaluation $record) => ! EvaluationCriterion::C9_Volunteering->isApplicable($record) ? 'N/A' : ($state !== null ? number_format($state, 1) : '-')),
+                        ->formatStateUsing(fn ($state, Evaluation $record) => ! EvaluationCriterion::C9_Volunteering->isApplicable($record) ? 'N/A' : ($state !== null ? number_format($state, 1) : '-'))
+                        ->toggleable(),
                 ]),
 
                 // 5. Notes et bonus
@@ -338,7 +358,8 @@ class EvaluationsRelationManager extends RelationManager
                         ->tooltip('Moyenne pondérée des critères notés sur 10')
                         ->alignCenter()
                         ->weight('bold')
-                        ->formatStateUsing(fn ($state) => $state !== null ? number_format($state, 2) : '-'),
+                        ->formatStateUsing(fn ($state) => $state !== null ? number_format($state, 2) : '-')
+                        ->toggleable(),
 
                     ToggleColumn::make('has_club_engagement')
                         ->label('Engagement club')
@@ -346,7 +367,8 @@ class EvaluationsRelationManager extends RelationManager
                         ->alignCenter()
                         ->afterStateUpdated(function (Evaluation $record): void {
                             app(EvaluationCalculatorService::class)->calculateAthlete($record);
-                        }),
+                        })
+                        ->toggleable(),
 
                     TextColumn::make('final_score')
                         ->label('Note')
