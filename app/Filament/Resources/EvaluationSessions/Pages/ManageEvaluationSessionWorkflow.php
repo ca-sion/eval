@@ -127,9 +127,13 @@ class ManageEvaluationSessionWorkflow extends Page
                         return;
                     }
 
+                    $groupsText = $this->record->groups()->exists()
+                        ? "{$result['groups_synced']} groupe(s) ciblé(s)"
+                        : "{$result['groups_synced']} groupes analysés";
+
                     Notification::make()
                         ->title('Synchronisation Tiiva réussie')
-                        ->body("{$result['groups_synced']} groupes analysés • {$result['athletes_synced']} athlètes synchronisés ({$result['athletes_created']} créés, {$result['athletes_updated']} màj) • {$result['evaluations_created']} évaluations créées.")
+                        ->body("{$groupsText} • {$result['athletes_synced']} athlètes synchronisés ({$result['athletes_created']} créés, {$result['athletes_updated']} màj) • {$result['evaluations_created']} évaluations préparées pour la session.")
                         ->success()
                         ->send();
                 } catch (\Throwable $e) {
@@ -152,10 +156,12 @@ class ManageEvaluationSessionWorkflow extends Page
             ->icon(Heroicon::OutlinedSparkles)
             ->color('gray')
             ->requiresConfirmation()
-            ->modalHeading('Générer les évaluations pour tous les athlètes actifs ?')
-            ->modalDescription('Une évaluation collective sera créée pour chaque athlète actif dans son groupe d\'entraînement actuel.')
+            ->modalHeading('Générer les évaluations pour les athlètes actifs ?')
+            ->modalDescription('Une évaluation collective sera créée pour chaque athlète actif dans son groupe d\'entraînement.')
             ->action(function (): void {
                 $session = $this->record;
+                $prunedCount = $session->pruneUntargetedEvaluations();
+
                 $athletesQuery = Athlete::whereIn('status', [AthleteStatus::Active, AthleteStatus::Adaptation])->with('group');
                 if ($session->groups()->exists()) {
                     $athletesQuery->whereIn('group_id', $session->groups()->pluck('groups.id'));
@@ -202,6 +208,10 @@ class ManageEvaluationSessionWorkflow extends Page
                 $msg = $createdCount > 0
                     ? "{$createdCount} nouvelles évaluations créées ({$updatedCount} évaluations existantes synchronisées)."
                     : "{$updatedCount} évaluations existantes synchronisées avec les dates de la session.";
+
+                if ($prunedCount > 0) {
+                    $msg .= " ({$prunedCount} évaluation(s) hors groupe(s) ciblé(s) nettoyée(s)).";
+                }
 
                 Notification::make()
                     ->title('Initialisation et synchronisation terminées')
@@ -456,9 +466,15 @@ class ManageEvaluationSessionWorkflow extends Page
                 unset($data['groups']);
                 $this->record->update($data);
                 $this->record->groups()->sync($groups);
+                $pruned = $this->record->pruneUntargetedEvaluations();
+
+                $msg = 'Paramètres de la session mis à jour';
+                if ($pruned > 0) {
+                    $msg .= " ({$pruned} évaluation(s) hors périmètre nettoyée(s)).";
+                }
 
                 Notification::make()
-                    ->title('Paramètres de la session mis à jour')
+                    ->title($msg)
                     ->success()
                     ->send();
             });

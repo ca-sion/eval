@@ -73,7 +73,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('athlete_id')->constrained('athletes')->cascadeOnDelete();
             $table->foreignId('group_id')->constrained('groups')->cascadeOnDelete();
-            $table->foreignId('evaluation_session_id')->nullable()->constrained('evaluation_sessions')->nullOnDelete();
+            $table->foreignId('evaluation_session_id')->nullable()->constrained('evaluation_sessions')->cascadeOnDelete();
             $table->foreignId('parent_evaluation_id')->nullable()->constrained('evaluations')->nullOnDelete();
             $table->string('context')->default('collective');
             $table->date('start_date');

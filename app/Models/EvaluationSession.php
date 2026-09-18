@@ -37,6 +37,10 @@ class EvaluationSession extends Model
                 ]);
             }
         });
+
+        static::deleting(function (EvaluationSession $session): void {
+            $session->evaluations()->delete();
+        });
     }
 
     public function evaluations(): HasMany
@@ -52,5 +56,23 @@ class EvaluationSession extends Model
     public function effectiveSubmissionDeadline(): ?Carbon
     {
         return $this->submission_deadline ?? $this->end_date;
+    }
+
+    /**
+     * Nettoie les évaluations de la session pour les athlètes n'appartenant plus aux groupes ciblés.
+     *
+     * @return int Nombre d'évaluations supprimées
+     */
+    public function pruneUntargetedEvaluations(): int
+    {
+        if (! $this->groups()->exists()) {
+            return 0;
+        }
+
+        $targetedGroupIds = $this->groups()->pluck('groups.id')->toArray();
+
+        return $this->evaluations()
+            ->whereNotIn('group_id', $targetedGroupIds)
+            ->delete();
     }
 }

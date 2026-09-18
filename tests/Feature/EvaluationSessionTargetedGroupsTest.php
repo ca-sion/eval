@@ -3,6 +3,7 @@
 use App\Enums\AthleteStatus;
 use App\Enums\EvaluationContext;
 use App\Enums\EvaluationStatus;
+use App\Filament\Resources\EvaluationSessions\Pages\ListEvaluationSessions;
 use App\Filament\Resources\EvaluationSessions\Pages\ManageEvaluationSessionWorkflow;
 use App\Livewire\CoachGroupEvaluation;
 use App\Models\Athlete;
@@ -130,4 +131,91 @@ test('group whatsapp share url contains session title, period and submission dea
         ->and($decoded)->toContain('- Date limite de transmission : *07.10.2026*')
         ->and($decoded)->toContain('Merci pour votre engagement et bonne évaluation !')
         ->and($decoded)->toContain(route('group.mobile', ['group' => $group->access_token]));
+});
+
+test('deleting an evaluation session also deletes its evaluations', function () {
+    $group = Group::create(['name' => 'Groupe Test']);
+    $athlete = Athlete::create(['group_id' => $group->id, 'first_name' => 'Marc', 'last_name' => 'Test', 'birth_year' => 2014]);
+
+    $session = EvaluationSession::create([
+        'title' => 'Session Test Deletion',
+        'start_date' => '2026-09-01',
+        'end_date' => '2026-09-30',
+    ]);
+
+    $eval = Evaluation::create([
+        'athlete_id' => $athlete->id,
+        'group_id' => $group->id,
+        'evaluation_session_id' => $session->id,
+        'start_date' => $session->start_date,
+        'end_date' => $session->end_date,
+    ]);
+
+    expect(Evaluation::where('id', $eval->id)->exists())->toBeTrue();
+
+    $session->delete();
+
+    expect(Evaluation::where('id', $eval->id)->exists())->toBeFalse();
+});
+
+test('pruneUntargetedEvaluations removes evaluations of groups no longer targeted', function () {
+    $groupA = Group::create(['name' => 'Groupe A']);
+    $groupB = Group::create(['name' => 'Groupe B']);
+
+    $athleteA = Athlete::create(['group_id' => $groupA->id, 'first_name' => 'Alice', 'last_name' => 'A', 'birth_year' => 2015]);
+    $athleteB = Athlete::create(['group_id' => $groupB->id, 'first_name' => 'Bob', 'last_name' => 'B', 'birth_year' => 2014]);
+
+    $session = EvaluationSession::create([
+        'title' => 'Session Multi Groupes',
+        'start_date' => '2026-09-01',
+        'end_date' => '2026-09-30',
+    ]);
+    $session->groups()->attach([$groupA->id, $groupB->id]);
+
+    $evalA = Evaluation::create([
+        'athlete_id' => $athleteA->id,
+        'group_id' => $groupA->id,
+        'evaluation_session_id' => $session->id,
+        'start_date' => $session->start_date,
+        'end_date' => $session->end_date,
+    ]);
+
+    $evalB = Evaluation::create([
+        'athlete_id' => $athleteB->id,
+        'group_id' => $groupB->id,
+        'evaluation_session_id' => $session->id,
+        'start_date' => $session->start_date,
+        'end_date' => $session->end_date,
+    ]);
+
+    // Restrict session to group A only
+    $session->groups()->sync([$groupA->id]);
+
+    $pruned = $session->pruneUntargetedEvaluations();
+
+    expect($pruned)->toBe(1)
+        ->and(Evaluation::where('id', $evalA->id)->exists())->toBeTrue()
+        ->and(Evaluation::where('id', $evalB->id)->exists())->toBeFalse();
+});
+
+test('list evaluation sessions page can clean up orphaned evaluations', function () {
+    $admin = User::factory()->create();
+    $group = Group::create(['name' => 'Groupe Orphelin']);
+    $athlete = Athlete::create(['group_id' => $group->id, 'first_name' => 'Orphan', 'last_name' => 'Kid', 'birth_year' => 2015]);
+
+    $orphanEval = Evaluation::create([
+        'athlete_id' => $athlete->id,
+        'group_id' => $group->id,
+        'evaluation_session_id' => null,
+        'start_date' => '2026-09-01',
+        'end_date' => '2026-09-30',
+    ]);
+
+    expect(Evaluation::whereNull('evaluation_session_id')->count())->toBe(1);
+
+    Livewire::actingAs($admin)
+        ->test(ListEvaluationSessions::class)
+        ->callAction('cleanup_orphans');
+
+    expect(Evaluation::whereNull('evaluation_session_id')->count())->toBe(0);
 });

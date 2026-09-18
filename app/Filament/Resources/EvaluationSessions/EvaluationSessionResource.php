@@ -11,6 +11,7 @@ use App\Models\EvaluationSession;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\CheckboxList;
@@ -134,6 +135,8 @@ class EvaluationSessionResource extends Resource
                     ->color('primary')
                     ->url(fn (EvaluationSession $record): string => static::getUrl('workflow', ['record' => $record])),
                 EditAction::make(),
+                DeleteAction::make()
+                    ->modalDescription('Êtes-vous sûr de vouloir supprimer cette session ? Toutes les fiches d\'évaluations créées pour cette session seront également supprimées.'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

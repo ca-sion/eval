@@ -10,6 +10,7 @@ use App\Models\EvaluationSession;
 use App\Models\Group;
 use Carbon\Carbon;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
@@ -183,27 +184,32 @@ class TiivaApiService
      * Interroge l'API Tiiva de manière ciblée par groupe d'entraînement (filter[group_id]),
      * évitant ainsi de télécharger inutilement les milliers de contacts non-athlètes (comité, bénévoles, sponsors).
      *
-     * @param  Group|null  $specificGroup  Si renseigné, synchronise uniquement ce groupe.
+     * @param  Group|Collection<int, Group>|array<int, Group>|null  $targetGroups  Si renseigné, synchronise uniquement ces groupes.
      * @return array{created: int, updated: int, deactivated: int, total: int, newly_created_ids: array<int>}
      */
-    public function syncContacts(?Group $specificGroup = null): array
+    public function syncContacts(Group|Collection|array|null $targetGroups = null): array
     {
         // S'assurer que les groupes locaux ont bien leur tiiva_id
         if (Group::whereNotNull('tiiva_id')->count() === 0) {
             $this->syncGroups();
         }
 
-        $targetGroups = $specificGroup
-            ? collect([$specificGroup])
-            : Group::where('is_activity_group', true)->whereNotNull('tiiva_id')->get();
+        if ($targetGroups instanceof Group) {
+            $groups = collect([$targetGroups]);
+        } elseif ($targetGroups !== null) {
+            $groups = collect($targetGroups);
+        } else {
+            $groups = Group::where('is_activity_group', true)->whereNotNull('tiiva_id')->get();
+        }
 
+        $isSelective = ($targetGroups !== null);
         $created = 0;
         $updated = 0;
         $total = 0;
         $syncedActiveTiivaIds = [];
         $newlyCreatedAthleteIds = [];
 
-        foreach ($targetGroups as $group) {
+        foreach ($groups as $group) {
             if (empty($group->tiiva_id)) {
                 continue;
             }
@@ -336,11 +342,16 @@ class TiivaApiService
 
         // Désactivation des athlètes locaux rattachés aux groupes synchronisés qui ne sont plus retournés par Tiiva
         $deactivatedCount = 0;
-        if (! empty($syncedActiveTiivaIds) && ! $specificGroup) {
-            $athletesToDeactivate = Athlete::whereNotNull('tiiva_id')
+        if (! empty($syncedActiveTiivaIds)) {
+            $athletesToDeactivateQuery = Athlete::whereNotNull('tiiva_id')
                 ->whereNotIn('tiiva_id', $syncedActiveTiivaIds)
-                ->where('status', '!=', AthleteStatus::Inactive)
-                ->get();
+                ->where('status', '!=', AthleteStatus::Inactive);
+
+            if ($isSelective) {
+                $athletesToDeactivateQuery->whereIn('group_id', $groups->pluck('id'));
+            }
+
+            $athletesToDeactivate = $athletesToDeactivateQuery->get();
 
             foreach ($athletesToDeactivate as $ath) {
                 $ath->update(['status' => AthleteStatus::Inactive]);
@@ -377,12 +388,21 @@ class TiivaApiService
     {
         try {
             $groupsResult = $this->syncGroups();
-            $contactsResult = $this->syncContacts();
+
+            $targetedGroups = null;
+            if ($session && $session->groups()->exists()) {
+                $targetedGroups = $session->groups()->whereNotNull('tiiva_id')->get();
+            }
+
+            $contactsResult = $this->syncContacts($targetedGroups);
             $evalsCreated = 0;
             $adaptationEvalsCreated = 0;
 
             if ($session) {
                 $session->update(['last_tiiva_synced_at' => now()]);
+
+                // Nettoyer les évaluations hors périmètre si les groupes ciblés ont changé
+                $session->pruneUntargetedEvaluations();
 
                 $athletesQuery = Athlete::whereIn('status', [AthleteStatus::Active, AthleteStatus::Adaptation])->with('group');
                 if ($session->groups()->exists()) {
@@ -428,9 +448,11 @@ class TiivaApiService
                 }
             }
 
+            $groupsSyncedCount = $targetedGroups !== null ? $targetedGroups->count() : $groupsResult['total'];
+
             return [
                 'success' => true,
-                'groups_synced' => $groupsResult['total'],
+                'groups_synced' => $groupsSyncedCount,
                 'athletes_synced' => $contactsResult['total'],
                 'athletes_created' => $contactsResult['created'],
                 'athletes_updated' => $contactsResult['updated'],

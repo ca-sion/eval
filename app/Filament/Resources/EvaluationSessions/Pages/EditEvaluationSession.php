@@ -48,6 +48,7 @@ class EditEvaluationSession extends EditRecord
                 ->modalHeading('Générer les évaluations pour les athlètes actifs ?')
                 ->modalDescription('Une évaluation sera créée pour chaque athlète actif dans son groupe d\'entraînement.')
                 ->action(function () use ($session): void {
+                    $prunedCount = $session->pruneUntargetedEvaluations();
                     $hasTargetedGroups = $session->groups()->exists();
                     $targetedGroupIds = $hasTargetedGroups ? $session->groups()->pluck('groups.id')->toArray() : [];
 
@@ -97,6 +98,10 @@ class EditEvaluationSession extends EditRecord
                     $msg = $createdCount > 0
                         ? "{$createdCount} nouvelles évaluations créées ({$updatedCount} évaluations existantes synchronisées)."
                         : "{$updatedCount} évaluations existantes synchronisées avec les dates de la session.";
+
+                    if ($prunedCount > 0) {
+                        $msg .= " ({$prunedCount} évaluation(s) hors groupe(s) ciblé(s) nettoyée(s)).";
+                    }
 
                     Notification::make()
                         ->title('Initialisation et synchronisation terminées')
@@ -277,7 +282,22 @@ class EditEvaluationSession extends EditRecord
                 ->label('Exports et documents')
                 ->icon(Heroicon::OutlinedArrowUpOnSquare),
 
-            DeleteAction::make(),
+            DeleteAction::make()
+                ->modalDescription('Êtes-vous sûr de vouloir supprimer cette session ? Toutes les fiches d\'évaluations créées pour cette session seront également supprimées.'),
         ];
+    }
+
+    protected function afterSave(): void
+    {
+        /** @var EvaluationSession $session */
+        $session = $this->record;
+        $pruned = $session->pruneUntargetedEvaluations();
+
+        if ($pruned > 0) {
+            Notification::make()
+                ->title("Périmètre synchronisé : {$pruned} évaluation(s) hors groupe(s) ciblé(s) ont été supprimées.")
+                ->info()
+                ->send();
+        }
     }
 }
